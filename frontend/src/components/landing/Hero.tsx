@@ -19,7 +19,6 @@ export default function Hero({ authed }: { authed: boolean }) {
       if (i === active) {
         v.currentTime = 0;
         setProgress(0);
-        v.muted = true; // React doesn't always emit the muted attribute; Chrome only autoplays muted media
         if (visible.current) v.play().catch(() => {});
       } else v.pause();
     });
@@ -77,8 +76,7 @@ export default function Hero({ authed }: { authed: boolean }) {
             src={t.video}
             muted
             playsInline
-            preload="auto"
-            onCanPlay={(e) => { const v = e.currentTarget; if (i === active && v.paused && visible.current) { v.muted = true; v.play().catch(() => {}); } }}
+            preload={i === 0 ? 'auto' : 'metadata'}
             onTimeUpdate={(e) => { if (i === active && e.currentTarget.duration) setProgress(e.currentTarget.currentTime / e.currentTarget.duration); }}
             onEnded={() => setActive((a) => (a + 1) % HERO_TABS.length)}
           />

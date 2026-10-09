@@ -11,6 +11,7 @@ import Hero from './Hero';
 import { Transition, ProductSections, Customers, Stories, Integrations, Cta } from './Sections';
 import Footer from './Footer';
 import CookieBar from './CookieBar';
+import TyChat from './TyChat';
 import ContactSalesModal from './ContactSalesModal';
 import { LogoIcon } from './Logo';
 
@@ -43,10 +44,7 @@ export default function Landing() {
         <Cta authed={authed} />
       </main>
       <Footer onContact={() => setContact(true)} />
-      <div className="ty" aria-hidden>
-        <div className="ty__msg">Hi there! I’m Ty from Typeform. We help teams capture richer data and automate workflows with AI. What kind of data or workflows are you looking to improve today?</div>
-        <button className="ty__btn" tabIndex={-1}><LogoIcon />Ask Ty</button>
-      </div>
+      <TyChat authed={authed} onContact={() => setContact(true)} />
       <CookieBar />
       {contact && <ContactSalesModal onClose={() => setContact(false)} />}
     </div>

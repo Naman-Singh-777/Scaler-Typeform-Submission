@@ -1,4 +1,4 @@
-// Dark mode for the creator-side UI (dashboard, builder, results). Stored per browser; falls back to the OS setting.
+// Dark mode for the creator-side UI (dashboard, builder, results). Stored per browser; light unless the user opted into dark.
 export type Mode = 'light' | 'dark';
 export const MODE_KEY = 'tf_mode';
 export const getMode = (): Mode => {
@@ -6,7 +6,7 @@ export const getMode = (): Mode => {
     const s = localStorage.getItem(MODE_KEY);
     if (s === 'dark' || s === 'light') return s;
   } catch { /* storage blocked */ }
-  return typeof window !== 'undefined' && window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  return 'light'; // light by default; dark only after the user opts in from the account menu
 };
 export const applyMode = (m: Mode) => {
   document.documentElement.dataset.theme = m;

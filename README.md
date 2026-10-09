@@ -1,5 +1,11 @@
 # Typeform Clone
 
+**Live demo:** https://scaler-typeform-submission.vercel.app  
+**API (FastAPI):** https://scaler-typeform-submission.onrender.com/docs  
+**Source:** https://github.com/Naman-Singh-777/Scaler-Typeform-Submission
+
+> The API runs on Render's free tier and sleeps when idle, so the first request after a pause can take ~30–50 s to wake up.
+
 A functional clone of Typeform: build forms in a drag-and-drop builder with live preview, publish them behind a shareable link, collect responses through the signature animated **one-question-at-a-time** experience, and analyse the results.
 
 - **Frontend:** Next.js 14 (App Router) + TypeScript, plain CSS (no UI kit), `@dnd-kit` for drag-and-drop
@@ -37,7 +43,7 @@ On first start the DB is seeded with a default creator and three forms (two publ
 | Landing page | Pixel-matched recreation of typeform.com: nav whose wordmark **slides into the logo mark** after 500 px of scroll (hover reveals it), mega-menu dropdowns, hero with split-word headline and three tab cards whose progress bars follow the hero videos (auto-advance on `ended`), scroll-parallax purple arc, text/media sections with staggered reveals, customer logo marquee, expanding testimonial slider, integrations marquee with brand-colour hover, looping star-field CTA video, footer with newsletter, cookie banner, "Ask Ty" chat chip, **Contact sales** modal (stored via API). Responsive down to mobile with a hamburger menu. |
 | Accounts | Sign up / log in pages (sign-up plays the "Setting you up…" loader animation before the workspace); the dashboard avatar menu shows the user and logs out. Each account has its own empty workspace. |
 | Typeform feel | Toasts, modals, inline editing, themes, placeholders ("Coming soon") for Connect/integrations, team sharing, payment & file upload, advanced logic. |
-| Bonus | **Basic logic jumps** (if answer … then jump to question / end form — evaluated on client *and* server), **custom themes** (6 presets, font, 5 colours), **CSV export**, **file-upload question** (5 MB, stored in the DB, creator downloads from the response drawer), **dark mode** (account menu, remembered per browser), **partial-response tracking / completion rate**. |
+| Bonus | **Basic logic jumps** (if answer … then jump to question / end form — evaluated on client *and* server), **custom themes** (6 presets, font, 5 colours), **CSV export**, **file-upload question** (5 MB, stored in the DB, creator downloads from the response drawer), **dark mode** (optional — light by default; toggle in the account menu, remembered per browser), **partial-response tracking / completion rate**. |
 
 ## Architecture
 
@@ -134,7 +140,7 @@ Public (no auth)
 - **Marketing assets:** the landing page reuses Typeform's public marketing media (hero/CTA videos, section posters, icons, integration and customer logos in `frontend/public/landing`) purely to reproduce the reference design for this exercise. The customer-logo marquee uses made-up placeholder names. Replace the files in that folder to rebrand. All code is original.
 - The three hero videos and CTA video are muted, looping/auto-advancing and pause when off screen.
 - Connect/integrations, team sharing and payment are "Coming soon" placeholders as allowed. File upload is real (bonus): the file travels base64 inside the submit request, is capped at 5 MB, and is stored in the `file_uploads` table.
-- Dark mode covers the creator UI (dashboard, builder, results). Respondent forms keep their own form theme.
+- Dark mode is opt-in (light by default) and covers the creator UI (dashboard, builder, results). The landing page and respondent forms are never darkened by it.
 
 ## Original work
 

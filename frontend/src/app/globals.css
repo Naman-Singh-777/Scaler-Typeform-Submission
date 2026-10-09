@@ -638,7 +638,7 @@ html[data-theme=dark] .qrow,html[data-theme=dark] .qsection{background:transpare
 html[data-theme=dark] .qrow:hover,html[data-theme=dark] .qsection:hover{background:var(--soft)}
 html[data-theme=dark] .qrow.sel,html[data-theme=dark] .qsection.sel{background:#2b262d;color:var(--ink);border-color:var(--line)}
 html[data-theme=dark] .qrow .qn{background:#3a343c}
-html[data-theme=dark] .bd-pane-h,html[data-theme=dark] .adm-main h1,html[data-theme=dark] .adm-main h2,html[data-theme=dark] h1,html[data-theme=dark] h2,html[data-theme=dark] h3{color:var(--ink)}
+html[data-theme=dark] .bd-pane-h,html[data-theme=dark] .adm-main h1,html[data-theme=dark] .adm-main h2,html[data-theme=dark] .adm-main h3{color:var(--ink)}
 html[data-theme=dark] .plus-btn,html[data-theme=dark] .adm-seg button,html[data-theme=dark] .adm-ibtn{background:#2b262d;color:var(--ink);border-color:var(--line)}
 html[data-theme=dark] .adm-seg button.on{background:#3a343c}
 html[data-theme=dark] .adm-create{background:#ece8ee;color:#161317}
