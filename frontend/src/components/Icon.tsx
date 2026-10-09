@@ -64,6 +64,14 @@ const P: Record<string, React.ReactNode> = {
   ranking: <path d="M5 6h2v6H5zM5 13h2.500a1 1 0 0 1 1 1v.500L5 18h4M13 7h7M13 12h7M13 17h7" />,
   matrix: <path d="M5 6h2M10 6h2M15 6h2M5 12h2M10 12h2M15 12h2M5 18h2M10 18h2M15 18h2" />,
   video: <><rect x="4" y="5" width="16" height="14" rx="2.5" /><path d="m10.500 9.500 4 2.500-4 2.500z" /></>,
+  fx: <><path d="M8 4.500C6 6 5 8.500 5 12s1 6 3 7.500M16 4.500C18 6 19 8.500 19 12s-1 6-3 7.500" /><path d="m9.500 9.500 5 5m0-5-5 5" /></>,
+  cycle: <><path d="M20 12a8 8 0 1 1-2.500-5.800" strokeDasharray="2 3" /><path d="M20 4v4h-4" /></>,
+  hand: <path d="M8 12V6.500a1.500 1.500 0 0 1 3 0V11m0-1V5a1.500 1.500 0 0 1 3 0v6m0-4.500a1.500 1.500 0 0 1 3 0V13m0-3a1.500 1.500 0 0 1 3 0v4.500c0 3.500-2.500 6-6 6h-1.500c-2 0-3.500-1-4.500-2.500L4 13.500c-.6-1 .6-2 1.500-1.300L8 14" />,
+  zoomin: <><circle cx="11" cy="11" r="6.500" /><path d="m20 20-4-4M11 8.500v5M8.500 11h5" /></>,
+  zoomout: <><circle cx="11" cy="11" r="6.500" /><path d="m20 20-4-4M8.500 11h5" /></>,
+  fit: <path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" />,
+  envelope: <><rect x="3.500" y="5.500" width="17" height="13" rx="2" /><path d="m4 7 8 6 8-6" /></>,
+  webhook: <><circle cx="12" cy="8" r="2.500" /><circle cx="6" cy="17" r="2.500" /><circle cx="18" cy="17" r="2.500" /><path d="M12 10.500 8 15M8.500 17h7M14 9.500l3 5" /></>,
   opinion: <path d="M5 19v-5M10 19v-9M15 19V7M20 19V4" />,
 };
 

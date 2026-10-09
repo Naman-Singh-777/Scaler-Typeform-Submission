@@ -45,7 +45,7 @@ export default function BuilderPage({ params }: { params: { id: string } }) {
         <aside className="bd-left">
           <div className="bd-mode"><button onClick={() => toast('Only Universal mode is available', 'info')}><Icon name="pages" size={16} stroke={1.6} />Universal mode<Icon name="chevdown" size={18} stroke={1.6} className="grow-end" /></button></div>
           <QuestionList form={form} sel={sel} onSelect={setSel} onReorder={b.reorder} onDelete={del} onDuplicate={dup} />
-          <AskAi />
+          <AskAi b={b} onAdded={(id) => setSel(id)} />
         </aside>
         <div className="bd-center">
           <div className="bd-toolbar">

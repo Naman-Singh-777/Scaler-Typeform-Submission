@@ -47,9 +47,7 @@ export default function FormHeader({ b, tab }: { b: Builder; tab: Tab }) {
             onBlur={() => !form.title.trim() && b.updateForm({ title: 'Untitled form' })} />
         </div>
         <nav className="fh-tabs">
-          {TABS.map(([k, l]) => k === 'workflow'
-            ? <button key={k} onClick={() => toast('Workflows are coming soon', 'info')}>{l}</button>
-            : <Link key={k} href={`/forms/${form.id}/${k}`} className={tab === k ? 'on' : ''}>{l}</Link>)}
+          {TABS.map(([k, l]) => <Link key={k} href={`/forms/${form.id}/${k}`} className={tab === k ? 'on' : ''}>{l}</Link>)}
         </nav>
         <div className="fh-right">
           <span className="saving">{label}</span>

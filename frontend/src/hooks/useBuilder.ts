@@ -50,6 +50,8 @@ export function useBuilder(formId: number) {
 
   const patchQuestions = (fn: (qs: Question[]) => Question[]) => setForm((f) => (f ? { ...f, questions: fn(f.questions) } : f));
 
+  const putQuestion = useCallback((q: Question) => patchQuestions((qs) => qs.map((x) => (x.id === q.id ? q : x))), []);
+
   const updateForm = useCallback((patch: Partial<Form>) => {
     setForm((f) => (f ? { ...f, ...patch } : f));
     schedule('form', patch, (p) => api.updateForm(formId, p));
@@ -111,6 +113,6 @@ export function useBuilder(formId: number) {
     catch (e: any) { toast(e.message, 'error'); }
   }, [formId, toast]);
 
-  return { form, loadError, status, updateForm, updateQuestion, changeType, addQuestion, deleteQuestion, duplicateQuestion, reorder, publish, unpublish, flushAll };
+  return { form, loadError, status, putQuestion, updateForm, updateQuestion, changeType, addQuestion, deleteQuestion, duplicateQuestion, reorder, publish, unpublish, flushAll };
 }
 export type Builder = ReturnType<typeof useBuilder>;
