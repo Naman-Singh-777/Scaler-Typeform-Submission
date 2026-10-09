@@ -1,6 +1,8 @@
 # Typeform clone
 
-> ## **Database: SQLite by default, as specified. The hosted demo uses Neon Postgres so data persists across Render restarts.**
+> ## **Database: SQLite by default, as specified.**
+>
+> The hosted demo uses Neon Postgres instead. Render's free hosting wipes its disk every time the server restarts (it also goes to sleep after 15 minutes without traffic). A SQLite file would be erased along with every account, form and response, so the demo keeps its data in Postgres.
 
 A working clone of Typeform. You build a form in a drag-and-drop builder, publish it, send people the link, and they answer one question at a time in a full-screen, animated flow. Their answers show up in a results view with stats and a CSV export.
 
