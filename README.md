@@ -1,5 +1,7 @@
 # Typeform clone
 
+> ## **Database: SQLite (default, as specified); hosted demo uses Neon Postgres only so data survives Render restarts**
+
 A working clone of Typeform. You build a form in a drag-and-drop builder, publish it, send people the link, and they answer one question at a time in a full-screen, animated flow. Their answers show up in a results view with stats and a CSV export.
 
 - Live app: https://scaler-typeform-submission.vercel.app
