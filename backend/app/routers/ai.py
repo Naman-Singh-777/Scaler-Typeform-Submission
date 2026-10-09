@@ -44,14 +44,22 @@ def ask_llm(system: str, messages: list[dict], max_tokens: int = 1200, temperatu
             return "".join(b.get("text", "") for b in r.json()["content"])
         base = os.getenv("LLM_BASE_URL", "https://generativelanguage.googleapis.com/v1beta/openai").rstrip("/")
         r = httpx.post(f"{base}/chat/completions", timeout=40, headers={"Authorization": f"Bearer {os.environ['LLM_API_KEY']}"}, json={
-            "model": os.getenv("LLM_MODEL", "gemini-2.0-flash"), "max_tokens": max_tokens, "temperature": temperature,
+            "model": os.getenv("LLM_MODEL", "gemini-2.5-flash-lite"), "max_tokens": max_tokens, "temperature": temperature,
             "messages": [{"role": "system", "content": system}, *messages]})
         r.raise_for_status()
         return r.json()["choices"][0]["message"]["content"]
     except HTTPException:
         raise
-    except Exception:
-        raise HTTPException(502, "The AI service did not respond. Please try again.")
+    except Exception as e:
+        # surface the upstream reason (never the key) so a bad key / model name is diagnosable
+        why = ""
+        resp = getattr(e, "response", None)
+        if resp is not None:
+            why = f" (upstream {resp.status_code}: {resp.text[:200]})"
+        else:
+            why = f" ({type(e).__name__})"
+        print("LLM error" + why, flush=True)
+        raise HTTPException(502, "The AI service did not respond. Please try again." + why)
 
 
 @router.get("/status")
