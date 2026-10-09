@@ -29,7 +29,7 @@ export default function WistiaVideo({ id, ratio, onTime, onLoop, lazy = false, c
   useEffect(() => {
     const el = host.current;
     if (!el) return;
-    let video: any = null, dead = false, started = false, io: IntersectionObserver | null = null;
+    let video: any = null, dead = false, started = false, io: IntersectionObserver | null = null, timer: any = 0;
 
     const start = () => {
       if (started || dead) return;
@@ -61,10 +61,11 @@ export default function WistiaVideo({ id, ratio, onTime, onLoop, lazy = false, c
     if (lazy && 'IntersectionObserver' in window) {
       io = new IntersectionObserver(([e]) => { if (e.isIntersecting) { start(); io?.disconnect(); } }, { rootMargin: '200px 0px' });
       io.observe(el);
+      timer = setTimeout(start, 4000); // safety net if IntersectionObserver never fires
     } else start();
 
     return () => {
-      dead = true; io?.disconnect();
+      dead = true; io?.disconnect(); clearTimeout(timer);
       try { video?.remove(); } catch {}
       if (el) el.innerHTML = '';
     };
