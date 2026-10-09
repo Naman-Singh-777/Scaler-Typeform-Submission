@@ -10,6 +10,8 @@ The API runs on Render's free tier and goes to sleep when idle. The first reques
 
 To look around quickly, open the live app, go to Log in, and press "Try the demo account". It signs you in as `creator@example.com` (password `demo1234`), which has three sample forms and about 40 responses. Or sign up with your own email and start from an empty workspace. Filling in a published form never needs an account.
 
+Note on the database: the project uses SQLite by default, as the brief asks. Running the backend locally (`uvicorn app.main:app`) needs no database setup and creates a seeded SQLite file. The hosted demo runs on Neon Postgres instead, because Render's free disk is wiped on every redeploy and visitors would lose their forms. The same SQLAlchemy models run unchanged on both, and Postgres is switched on only by setting `DATABASE_URL`.
+
 ## Stack
 
 | Layer | Choice |
