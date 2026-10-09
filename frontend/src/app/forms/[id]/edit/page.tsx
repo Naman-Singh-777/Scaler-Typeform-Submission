@@ -44,7 +44,7 @@ export default function BuilderPage({ params }: { params: { id: string } }) {
       <div className={`bd ${rightOpen ? '' : 'no-right'}`}>
         <aside className="bd-left">
           <div className="bd-mode"><button onClick={() => toast('Only Universal mode is available', 'info')}><Icon name="pages" size={16} stroke={1.6} />Universal mode<Icon name="chevdown" size={18} stroke={1.6} className="grow-end" /></button></div>
-          <QuestionList form={form} sel={sel} onSelect={setSel} onReorder={b.reorder} onDelete={del} onDuplicate={dup} />
+          <QuestionList form={form} sel={sel} onSelect={setSel} onReorder={b.reorder} onDelete={del} onDuplicate={dup} onToggleWelcome={() => b.updateForm({ welcome_enabled: !form.welcome_enabled })} />
         </aside>
         <div className="bd-center">
           <div className="bd-toolbar">
