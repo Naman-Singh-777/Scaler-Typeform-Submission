@@ -585,3 +585,21 @@ body{font-family:system-ui,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:va
 .cn-app>div{flex:1}
 .cn-app__ic{width:40px;height:40px;border-radius:8px;display:grid;place-items:center;color:var(--ink);flex:none}
 @media(max-width:900px){.cn-wrap{grid-template-columns:1fr;row-gap:24px;padding:24px 16px}.cn-tabs{padding:0 16px}}
+
+/* ---- post-signup loader (frame-measured from the real one; px = CSS px at 1.5x capture) ---- */
+.wl{min-height:100vh;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:46px;transform:translateY(-3vh);color:#000}
+.wl__mark{display:flex;gap:11px;height:94px}
+.wl__mark i{display:block;height:100%;background:#000;border-radius:20px}
+.wl__mark i:first-child{width:99px}
+.wl__mark i:last-child{width:33px}
+.wl__txt{font-size:29px;line-height:34px;font-weight:400;margin:0;text-align:center;padding:0 24px}
+.wl.go .wl__mark i:first-child{animation:wlL .55s cubic-bezier(.62,0,.3,1) .07s both}
+.wl.go .wl__mark i:last-child{animation:wlR .55s cubic-bezier(.62,0,.3,1) .07s both}
+.wl.go .wl__mark,.wl.go .wl__txt{animation:wlFade .32s linear .36s both}
+@keyframes wlL{to{width:36px}}
+@keyframes wlR{to{width:93px}}
+@keyframes wlFade{to{opacity:0}}
+.adm{animation:admIn .35s ease both}
+@keyframes admIn{from{opacity:0}}
+@media(max-width:700px){.wl__mark{height:70px;transform:scale(.8)}.wl__txt{font-size:20px;line-height:26px}}
+@media(prefers-reduced-motion:reduce){.wl.go .wl__mark i,.wl.go .wl__mark,.wl.go .wl__txt{animation-duration:.01s!important}}

@@ -35,7 +35,7 @@ On first start the DB is seeded with a default creator and three forms (two publ
 | Respondent flow | Full-screen, one question at a time, animated slide transitions, progress bar + %, keyboard (Enter, ↑/↓, letter keys A–Z for choices, Y/N, digits for rating, Shift+Enter in long text), client **and** server validation, thank-you screen, no login. |
 | Results | Stats (views, starts, responses, completion rate, avg. time), per-question **summary** (choice counts/percentages, rating average + distribution, number stats, latest text answers), **responses table**, single-response drawer with prev/next + delete, completed/partial filter, **CSV export**. |
 | Landing page | Pixel-matched recreation of typeform.com: nav whose wordmark **slides into the logo mark** after 500 px of scroll (hover reveals it), mega-menu dropdowns, hero with split-word headline and three tab cards whose progress bars follow the hero videos (auto-advance on `ended`), scroll-parallax purple arc, text/media sections with staggered reveals, customer logo marquee, expanding testimonial slider, integrations marquee with brand-colour hover, looping star-field CTA video, footer with newsletter, cookie banner, "Ask Ty" chat chip, **Contact sales** modal (stored via API). Responsive down to mobile with a hamburger menu. |
-| Accounts | Sign up / log in pages; the dashboard avatar menu shows the user and logs out. Each account has its own empty workspace. |
+| Accounts | Sign up / log in pages (sign-up plays the "Setting you up…" loader animation before the workspace); the dashboard avatar menu shows the user and logs out. Each account has its own empty workspace. |
 | Typeform feel | Toasts, modals, inline editing, themes, placeholders ("Coming soon") for Connect/integrations, team sharing, payment & file upload, advanced logic. |
 | Bonus | **Basic logic jumps** (if answer … then jump to question / end form — evaluated on client *and* server), **custom themes** (6 presets, font, 5 colours), **CSV export**, **partial-response tracking / completion rate**. |
 
@@ -121,7 +121,7 @@ Public (no auth)
 
 ## Deployment
 
-- **API → Render** (or Railway/Fly): `render.yaml` is included (root dir `backend`, start `uvicorn app.main:app --host 0.0.0.0 --port $PORT`). Set `CORS_ORIGINS` to your frontend URL. SQLite lives on the instance disk — on free tiers it resets on redeploy and the seed data returns; attach a persistent disk and set `DATABASE_URL=sqlite:////var/data/typeform.db` to keep data.
+- **API → Render** (or Railway/Fly): `render.yaml` is included (root dir `backend`, start `uvicorn app.main:app --host 0.0.0.0 --port $PORT`). Set `CORS_ORIGINS` to your frontend URL. SQLite lives on the instance disk — on free tiers it resets on redeploy and the seed data returns; attach a persistent disk and set `DATABASE_URL=sqlite:////var/data/typeform.db` to keep data. Render's free web service also sleeps after 15 min without traffic (≈1 min cold start) — open the API URL once before a demo, or ping `/api/health` with a free uptime monitor.
 - **Frontend → Vercel/Netlify:** import the repo, set root directory `frontend`, env `NEXT_PUBLIC_API_URL=https://<your-api-host>`.
 
 ## Assumptions & notes

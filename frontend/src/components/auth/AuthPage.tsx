@@ -27,7 +27,7 @@ export default function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
     try {
       const r = signup ? await api.signup(f) : await api.login({ email: f.email, password: f.password });
       setToken(r.token);
-      router.push('/dashboard');
+      router.push(signup ? '/welcome' : '/dashboard'); // new accounts see the "Setting you up" loader first
     } catch (x: any) { setErr(x.message || 'Something went wrong.'); setBusy(false); }
   };
 
