@@ -22,6 +22,11 @@ async function req<T>(path: string, init?: RequestInit): Promise<T> {
   } catch {
     throw new ApiError('Cannot reach the server. Is the backend running?', 0);
   }
+  if (res.status === 401 && !path.startsWith('/auth/') && typeof window !== 'undefined') {
+    setToken(null); // not logged in (or the session expired): send visitors to the login page, never into someone else's workspace
+    window.location.href = '/login';
+    throw new ApiError('Please log in', 401);
+  }
   if (!res.ok) {
     let msg = res.statusText, errors;
     try {
@@ -37,7 +42,16 @@ async function req<T>(path: string, init?: RequestInit): Promise<T> {
 }
 const json = (method: string, body?: unknown): RequestInit => ({ method, body: body === undefined ? undefined : JSON.stringify(body) });
 
+export type Webhook = { id: number; kind: 'webhook' | 'slack' | 'zapier'; url: string; last_status: string; last_at: string | null };
+export type AiQuestion = { type: Question['type']; title: string; description: string; required: boolean; choices?: string[] };
+
 export const api = {
+  aiGenerate: (prompt: string, existing: string[] = []) => req<{ title: string; questions: AiQuestion[] }>('/ai/generate-form', json('POST', { prompt, existing })),
+  aiChat: (messages: { role: 'user' | 'assistant'; content: string }[]) => req<{ reply: string }>('/ai/chat', json('POST', { messages })),
+  listWebhooks: (formId: number) => req<Webhook[]>(`/forms/${formId}/webhooks`),
+  addWebhook: (formId: number, kind: string, url: string) => req<Webhook>(`/forms/${formId}/webhooks`, json('POST', { kind, url })),
+  deleteWebhook: (id: number) => req<void>(`/webhooks/${id}`, json('DELETE')),
+  testWebhook: (id: number) => req<Webhook>(`/webhooks/${id}/test`, json('POST')),
   siteContent: () => req<{ stories: { company: string; quote: string; logo: string }[]; integrations: { name: string; logo: string }[] }>('/site/content'),
   newsletter: (email: string) => req<{ ok: boolean }>('/newsletter', json('POST', { email })),
   contactSales: (body: { name: string; email: string; company?: string; message?: string }) => req<{ ok: boolean }>('/contact-sales', json('POST', body)),

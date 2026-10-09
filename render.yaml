@@ -12,3 +12,7 @@ services:
         value: 3.12.7
       - key: CORS_ORIGINS
         value: "*"   # tighten to your Vercel URL after deploying
+      - key: DATABASE_URL        # paste a Postgres URL (Neon/Supabase) so data survives redeploys; empty = SQLite on the instance disk
+        sync: false
+      - key: LLM_API_KEY         # real AI: Gemini/OpenAI-compatible key (or set ANTHROPIC_API_KEY instead)
+        sync: false

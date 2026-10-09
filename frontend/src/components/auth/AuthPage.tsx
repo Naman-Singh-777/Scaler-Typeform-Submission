@@ -47,7 +47,11 @@ export default function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
           {err && <div className="au__err" role="alert">{err}</div>}
           <button className="au__btn" disabled={busy}>{busy ? 'Please wait…' : signup ? 'Create my free account' : 'Log in'}</button>
           <p className="au__alt">{signup ? <>Already have an account? <Link href="/login">Log in</Link></> : <>New here? <Link href="/signup">Sign up, it’s free</Link></>}</p>
-          <p className="au__alt"><Link href="/dashboard">Continue as demo creator →</Link></p>
+          <p className="au__alt"><button type="button" className="au__link" disabled={busy} onClick={async () => {
+            setErr(''); setBusy(true);
+            try { const r = await api.login({ email: 'creator@example.com', password: 'demo1234' }); setToken(r.token); router.push('/dashboard'); }
+            catch (x: any) { setErr(x.message || 'Could not open the demo account.'); setBusy(false); }
+          }}>Try the demo account (sample forms) →</button></p>
         </form>
       </div>
     </div>

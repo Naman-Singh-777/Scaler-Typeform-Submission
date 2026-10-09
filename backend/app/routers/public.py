@@ -1,5 +1,5 @@
 """Public (no auth) respondent API."""
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -7,6 +7,7 @@ from ..database import get_db
 from ..logic import compute_path, validate_answer
 from ..models import Answer, FileUpload, Form, Response, utcnow
 from ..schemas import AnswersIn, FormOut
+from .integrations import deliver_response
 
 router = APIRouter(prefix="/api/public", tags=["public"])
 
@@ -37,7 +38,7 @@ def start_response(slug: str, db: Session = Depends(get_db)):
 
 
 @router.post("/forms/{slug}/responses/{response_id}/submit", status_code=201)
-def submit_response(slug: str, response_id: int, body: AnswersIn, db: Session = Depends(get_db)):
+def submit_response(slug: str, response_id: int, body: AnswersIn, bg: BackgroundTasks, db: Session = Depends(get_db)):
     form = _published(slug, db)
     resp = db.scalar(select(Response).where(Response.id == response_id, Response.form_id == form.id))
     if not resp:
@@ -66,4 +67,5 @@ def submit_response(slug: str, response_id: int, body: AnswersIn, db: Session = 
         resp.answers.append(Answer(question_id=qid, value=value))
     resp.status, resp.submitted_at = "completed", utcnow()
     db.commit()
+    bg.add_task(deliver_response, form.id, resp.id)  # forward to the form's webhooks / Slack / Zapier
     return {"id": resp.id, "status": resp.status}

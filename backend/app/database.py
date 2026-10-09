@@ -4,11 +4,16 @@ import os
 from sqlalchemy import create_engine, event
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./typeform.db")
+DATABASE_URL = os.getenv("DATABASE_URL") or "sqlite:///./typeform.db"
+# Hosted Postgres (Neon, Supabase, Render...) hands out postgres:// or postgresql:// URLs; use the psycopg 3 driver.
+if DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = "postgresql://" + DATABASE_URL[len("postgres://"):]
+if DATABASE_URL.startswith("postgresql://"):
+    DATABASE_URL = "postgresql+psycopg://" + DATABASE_URL[len("postgresql://"):]
 _is_sqlite = DATABASE_URL.startswith("sqlite")
 
 engine = create_engine(
-    DATABASE_URL, connect_args={"check_same_thread": False} if _is_sqlite else {}
+    DATABASE_URL, connect_args={"check_same_thread": False} if _is_sqlite else {}, pool_pre_ping=True
 )
 
 

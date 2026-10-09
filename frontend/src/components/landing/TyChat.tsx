@@ -2,13 +2,14 @@
 import Link from 'next/link';
 import { FormEvent, useEffect, useRef, useState } from 'react';
 import { LogoIcon } from './Logo';
+import { api, ApiError } from '@/lib/api';
 
 type Msg = { from: 'bot' | 'me'; text: string; cta?: { label: string; href?: string; contact?: boolean } };
 
 const GREETING = 'Hi there! I’m Ty from Typeform. We help teams capture richer data and automate workflows with AI. What kind of data or workflows are you looking to improve today?';
 const CHIPS = ['Build a form', 'Pricing', 'Integrations', 'Talk to sales'];
 
-/** Small rule-based assistant (the real one is an AI agent; this clone answers common questions locally). */
+/** Offline fallback used only when the server's AI is unavailable. */
 function answer(q: string, authed: boolean): Msg {
   const t = q.toLowerCase();
   const start = authed ? { label: 'Go to your workspace', href: '/dashboard' } : { label: 'Get started — it’s free', href: '/signup' };
@@ -38,11 +39,21 @@ export default function TyChat({ authed, onContact }: { authed: boolean; onConta
     return () => window.removeEventListener('keydown', h);
   }, [open]);
 
-  const send = (text: string) => {
+  const send = async (text: string) => {
     const q = text.trim();
     if (!q || typing) return;
-    setMsgs((m) => [...m, { from: 'me', text: q }]); setV(''); setTyping(true);
-    timer.current = setTimeout(() => { setMsgs((m) => [...m, answer(q, authed)]); setTyping(false); }, 700);
+    const history = [...msgs, { from: 'me' as const, text: q }];
+    setMsgs(history); setV(''); setTyping(true);
+    let reply: Msg;
+    try { // real LLM (backend /api/ai/chat); falls back to canned answers if the AI is not configured or unreachable
+      const r = await api.aiChat(history.slice(1).map((m) => ({ role: m.from === 'me' ? 'user' as const : 'assistant' as const, content: m.text })).slice(-12));
+      const t = r.reply.toLowerCase();
+      reply = { from: 'bot', text: r.reply, cta: /contact sales|talk to (our )?sales/.test(t) ? { label: 'Contact sales', contact: true } : /sign up|get started|free/.test(t) ? (authed ? { label: 'Go to your workspace', href: '/dashboard' } : { label: 'Get started — it’s free', href: '/signup' }) : undefined };
+    } catch (e) {
+      if (e instanceof ApiError && e.status === 429) reply = { from: 'bot', text: e.message };
+      else reply = answer(q, authed);
+    }
+    setMsgs((m) => [...m, reply]); setTyping(false);
   };
   const submit = (e: FormEvent) => { e.preventDefault(); send(v); };
 

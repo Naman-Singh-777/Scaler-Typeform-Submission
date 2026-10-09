@@ -1,4 +1,5 @@
 import os, tempfile
+os.environ["ALLOW_ANON_DEMO"] = "1"  # tests drive the API without logging in
 os.environ["DATABASE_URL"] = f"sqlite:///{tempfile.mkdtemp()}/t.db"
 from fastapi.testclient import TestClient
 from app.main import app
@@ -92,3 +93,52 @@ def test_file_upload_question():
         assert dl.status_code == 200 and dl.content == b"hello file" and "attachment" in dl.headers["content-disposition"]
         assert "cv.txt" in c.get(f"/api/forms/{fid}/responses/export.csv").text
         assert c.get(f"/api/forms/{fid}/summary").json()["questions"][1]["latest"] == ["cv.txt"]
+
+
+def test_auth_required_and_demo_login(monkeypatch):
+    monkeypatch.delenv("ALLOW_ANON_DEMO")
+    with TestClient(app) as c:
+        assert c.get("/api/forms").status_code == 401            # strangers never see anyone's forms
+        assert c.post("/api/forms", json={"title": "x"}).status_code == 401
+        tok = c.post("/api/auth/login", json={"email": "creator@example.com", "password": "demo1234"}).json()["token"]
+        assert len(c.get("/api/forms", headers={"Authorization": f"Bearer {tok}"}).json()) >= 3
+        new = c.post("/api/auth/signup", json={"name": "N", "email": "n@x.co", "password": "password1"}).json()["token"]
+        assert c.get("/api/forms", headers={"Authorization": f"Bearer {new}"}).json() == []  # fresh, private workspace
+    monkeypatch.setenv("ALLOW_ANON_DEMO", "1")
+
+
+def test_ai_generate_and_chat_use_the_llm(monkeypatch):
+    from app.routers import ai
+    with TestClient(app) as c:
+        assert c.get("/api/ai/status").json()["configured"] is False
+        assert c.post("/api/ai/generate-form", json={"prompt": "a yoga class signup"}).status_code == 503
+        monkeypatch.setattr(ai, "ask_llm", lambda system, messages, **k: '```json\n{"title":"Yoga signup","questions":[{"type":"short_text","title":"Your name?","required":true},{"type":"dropdown","title":"Class?","choices":["Mon"]},{"type":"bogus","title":"x"}]}\n```' if "JSON" in system else "Hi, I am Ty.")
+        r = c.post("/api/ai/generate-form", json={"prompt": "a yoga class signup"}).json()
+        assert r["title"] == "Yoga signup" and [q["type"] for q in r["questions"]] == ["short_text", "dropdown"]
+        assert len(r["questions"][1]["choices"]) >= 2           # too-few choices are repaired, unknown types dropped
+        assert c.post("/api/ai/chat", json={"messages": [{"role": "user", "content": "hello"}]}).json()["reply"] == "Hi, I am Ty."
+
+
+def test_webhook_connection(monkeypatch):
+    from app.routers import integrations as ig
+    sent = []
+    monkeypatch.setattr(ig, "_post", lambda w, body: sent.append((w.kind, body)) or "200 OK")
+    monkeypatch.setattr(ig.socket, "getaddrinfo", lambda *a, **k: [(0, 0, 0, "", ("93.184.216.34", 443))])
+    with TestClient(app) as c:
+        f = c.post("/api/forms", json={"title": "Hooked"}).json()
+        fid, q0 = f["id"], f["questions"][0]["id"]
+        c.patch(f"/api/questions/{q0}", json={"title": "Name?"})
+        c.post(f"/api/forms/{fid}/publish")
+        assert c.post(f"/api/forms/{fid}/webhooks", json={"kind": "webhook", "url": "ftp://x.com/a"}).status_code == 422
+        assert c.post(f"/api/forms/{fid}/webhooks", json={"kind": "slack", "url": "https://evil.com/x"}).status_code == 422
+        monkeypatch.setattr(ig.socket, "getaddrinfo", lambda *a, **k: [(0, 0, 0, "", ("127.0.0.1", 443))])
+        assert c.post(f"/api/forms/{fid}/webhooks", json={"kind": "webhook", "url": "https://localhost/x"}).status_code == 422  # SSRF guard
+        monkeypatch.setattr(ig.socket, "getaddrinfo", lambda *a, **k: [(0, 0, 0, "", ("93.184.216.34", 443))])
+        w = c.post(f"/api/forms/{fid}/webhooks", json={"kind": "slack", "url": "https://hooks.slack.com/services/T/B/x"}).json()
+        c.post(f"/api/forms/{fid}/webhooks", json={"kind": "webhook", "url": "https://example.com/hook"})
+        slug = f["slug"]; rid = c.post(f"/api/public/forms/{slug}/responses").json()["id"]
+        assert c.post(f"/api/public/forms/{slug}/responses/{rid}/submit", json={"answers": {q0: "Ada"}}).status_code == 201
+        kinds = {k: b for k, b in sent}
+        assert kinds["webhook"]["answers"][0]["answer"] == "Ada" and "Ada" in kinds["slack"]["text"]
+        assert c.get(f"/api/forms/{fid}/webhooks").json()[0]["last_status"] == "200 OK"
+        assert c.delete(f"/api/webhooks/{w['id']}").status_code == 204

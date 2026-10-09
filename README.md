@@ -10,9 +10,9 @@ A functional clone of Typeform: build forms in a drag-and-drop builder with live
 
 - **Frontend:** Next.js 14 (App Router) + TypeScript, plain CSS (no UI kit), `@dnd-kit` for drag-and-drop
 - **Backend:** Python, FastAPI, SQLAlchemy 2
-- **Database:** SQLite (`backend/typeform.db`, auto-created and seeded on first start)
+- **Database:** SQLAlchemy on **SQLite by default** (`backend/typeform.db`, auto-created and seeded) or **PostgreSQL** by setting `DATABASE_URL` (Neon / Supabase / Render Postgres) — use Postgres in production so data survives redeploys
 - **Marketing site (`/`):** a recreation of the typeform.com landing page (animated logo, hero videos with tab progress, scroll reveals, mega-menus, customer slider, integrations marquee, footer, cookie banner, contact-sales modal).
-- **Auth:** light-weight — sign up / log in (`/signup`, `/login`, scrypt-hashed passwords, opaque bearer tokens). Without a token the seeded "Demo Creator" workspace is used, so the builder is usable instantly. Filling a published form never needs a login.
+- **Auth:** light-weight — sign up / log in (`/signup`, `/login`, scrypt-hashed passwords, opaque bearer tokens). Every creator page requires a login (strangers are sent to `/login`) and each account only sees its own forms. The seeded sample workspace belongs to a demo account — click **Try the demo account** on the login page (`creator@example.com` / `demo1234`). Filling a published form never needs a login.
 
 ## Quick start
 
@@ -73,7 +73,7 @@ Key decisions
 - **Granular REST for the builder** (one endpoint per question) keeps writes small; the client applies changes optimistically and debounces PATCHes (600 ms), flushing on publish/unload.
 - **Partial tracking:** a response row is created when the respondent *starts* (`status=partial`) and flipped to `completed` on submit. Completion rate = completed ÷ started.
 - **Answers store the choice *label*** (snapshot semantics), so exports/summaries stay readable even if a choice is later renamed.
-- **Auth lives in one dependency:** `deps.current_user` resolves the bearer token to a user (falling back to the demo creator when no token is sent); every creator route is scoped to that owner.
+- **Auth lives in one dependency:** `deps.current_user` resolves the bearer token to a user (answering 401 when it is missing — `ALLOW_ANON_DEMO=1` re-enables the old shared-demo fallback, used only by the test-suite); every creator route is scoped to that owner.
 - **Landing content is data:** testimonials and integrations are rows served by `GET /api/site/content`; the frontend ships the same copy as a static fallback so the page still renders if the API is asleep.
 
 ## Database schema
@@ -128,18 +128,19 @@ Public (no auth)
 
 ## Deployment
 
-- **API → Render** (or Railway/Fly): `render.yaml` is included (root dir `backend`, start `uvicorn app.main:app --host 0.0.0.0 --port $PORT`). Set `CORS_ORIGINS` to your frontend URL. SQLite lives on the instance disk — on free tiers it resets on redeploy and the seed data returns; attach a persistent disk and set `DATABASE_URL=sqlite:////var/data/typeform.db` to keep data. Render's free web service also sleeps after 15 min without traffic (≈1 min cold start) — open the API URL once before a demo, or ping `/api/health` with a free uptime monitor.
+- **API → Render** (or Railway/Fly): `render.yaml` is included (root dir `backend`, start `uvicorn app.main:app --host 0.0.0.0 --port $PORT`). Set `CORS_ORIGINS` to your frontend URL. SQLite lives on the instance disk — on free tiers it resets on every redeploy/restart, so for real use create a free Postgres (e.g. Neon) and set `DATABASE_URL` to its connection string (tables are created automatically). Render's free web service also sleeps after 15 min without traffic (≈1 min cold start) — open the API URL once before a demo, or ping `/api/health` with a free uptime monitor.
 - **Frontend → Vercel/Netlify:** import the repo, set root directory `frontend`, env `NEXT_PUBLIC_API_URL=https://<your-api-host>`.
 
 ## Assumptions & notes
 
-- Auth is intentionally simple (no email verification, password reset or OAuth). Anonymous requests use the demo creator so reviewers can try the builder immediately.
+- Auth is intentionally simple (no email verification, password reset or OAuth). Reviewers can use the demo account from the login page.
 - "Contact sales" and newsletter submissions are only stored in the database; no email is sent.
 - Logic jumps only go **forward** (keeps flows acyclic); first matching rule wins.
 - **Fonts:** Typeform's licensed faces (TWK Lausanne, Tobias) are substituted with the free Hanken Grotesk and Newsreader (self-hosted via `@fontsource`); the builder uses Inter/Karla/Space Grotesk/Playfair from Google Fonts.
 - **Marketing assets:** the landing page reuses Typeform's public marketing media (hero/CTA videos, section posters, icons, integration and customer logos in `frontend/public/landing`) purely to reproduce the reference design for this exercise. The customer-logo marquee uses made-up placeholder names. Replace the files in that folder to rebrand. All code is original.
 - The three hero videos and CTA video are muted, looping/auto-advancing and pause when off screen.
-- Connect/integrations, team sharing and payment are "Coming soon" placeholders as allowed. File upload is real (bonus): the file travels base64 inside the submit request, is capped at 5 MB, and is stored in the `file_uploads` table.
+- **Connect is real for URL-based connections:** Slack (incoming-webhook URL), Zapier (Catch Hook) and generic **webhooks** receive every completed response as JSON (background delivery, SSRF-guarded, "Send test" button, last-delivery status). Google Sheets / Notion / Mailchimp go through a Zapier Catch Hook. Team sharing and payment remain "Coming soon" placeholders as allowed.
+- **AI is real when a key is configured.** `POST /api/ai/generate-form` (creates questions from a prompt) and `POST /api/ai/chat` (the landing page's "Ask Ty", rate-limited) call an LLM from the server. Set **one** of: `ANTHROPIC_API_KEY` (optional `ANTHROPIC_MODEL`) or `LLM_API_KEY` (+ `LLM_BASE_URL`, `LLM_MODEL`; default is Google Gemini's free OpenAI-compatible endpoint, model `gemini-2.0-flash`). Without a key the endpoints return 503 and the UI falls back to built-in templates / canned answers. File upload is real (bonus): the file travels base64 inside the submit request, is capped at 5 MB, and is stored in the `file_uploads` table.
 - Dark mode is opt-in (light by default) and covers the creator UI (dashboard, builder, results). The landing page and respondent forms are never darkened by it.
 
 ## Original work

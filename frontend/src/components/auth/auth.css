@@ -13,3 +13,4 @@
 .au__btn:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 8px 24px rgba(160,87,187,.35)}.au__btn:disabled{opacity:.6}
 .au__err{color:#C0392B;font-size:14px}.au__alt{margin:0;font-size:14px;color:#6B626D}.au__alt a{color:#A057BB;font-weight:500}
 @media(max-width:800px){.au{grid-template-columns:1fr}.au__side{padding:24px;min-height:220px}.au__side h1{font-size:44px;line-height:46px;margin-top:24px}.au__side p{display:none}}
+.au__link{background:none;border:0;padding:0;color:inherit;font:inherit;text-decoration:underline;cursor:pointer}

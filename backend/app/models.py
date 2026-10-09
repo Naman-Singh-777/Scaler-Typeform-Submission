@@ -174,3 +174,15 @@ class FileUpload(Base):
     size: Mapped[int] = mapped_column(Integer)
     data: Mapped[bytes] = mapped_column(LargeBinary)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+
+
+class Webhook(Base):
+    """Connect: where a form's new responses are POSTed (kind = webhook | slack | zapier)."""
+    __tablename__ = "webhooks"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    form_id: Mapped[int] = mapped_column(ForeignKey("forms.id", ondelete="CASCADE"), index=True)
+    kind: Mapped[str] = mapped_column(String(12), default="webhook")
+    url: Mapped[str] = mapped_column(String(1000))
+    last_status: Mapped[str] = mapped_column(String(120), default="")
+    last_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)

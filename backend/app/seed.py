@@ -135,3 +135,15 @@ def seed_site_content(db: Session) -> None:
     if not db.scalar(select(IntegrationApp.id).limit(1)):
         db.add_all(IntegrationApp(position=i, name=n, logo=f"/landing/int-{k}.svg") for i, (n, k) in enumerate(INTEGRATIONS))
     db.commit()
+
+
+DEMO_PASSWORD = "demo1234"
+
+
+def ensure_demo_account(db: Session) -> None:
+    """The seeded workspace belongs to a demo account anyone can log into (creator@example.com / demo1234)."""
+    from .deps import hash_password
+    user = db.scalar(select(User).where(User.email == DEFAULT_CREATOR_EMAIL))
+    if user and not user.password_hash:
+        user.password_hash = hash_password(DEMO_PASSWORD)
+        db.commit()

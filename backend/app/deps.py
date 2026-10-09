@@ -1,9 +1,10 @@
 """Shared dependencies.
 
-Auth is deliberately light: a valid `Authorization: Bearer <token>` identifies the user; with no token the
-seeded demo creator is used so the builder works without signing in (documented assumption).
+A valid `Authorization: Bearer <token>` identifies the user; without one creator endpoints answer 401 so every
+visitor only ever sees their own workspace. (ALLOW_ANON_DEMO=1 restores the old shared-demo fallback; tests use it.)
 """
 import hashlib
+import os
 import random
 import secrets
 import string
@@ -54,6 +55,8 @@ def current_user(db: Session = Depends(get_db), authorization: str | None = Head
     user = user_from_token(db, authorization)
     if user:
         return user
+    if os.getenv("ALLOW_ANON_DEMO") != "1":
+        raise HTTPException(401, "Please log in")
     user = db.scalar(select(User).where(User.email == DEFAULT_CREATOR_EMAIL))
     if not user:
         user = User(name="Demo Creator", email=DEFAULT_CREATOR_EMAIL)

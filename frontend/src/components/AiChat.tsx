@@ -5,6 +5,7 @@ import Icon from './Icon';
 import { useToast } from './Toast';
 import { api } from '@/lib/api';
 import { planFromPrompt } from '@/lib/aiBuild';
+import { ApiError } from '@/lib/api';
 import type { Builder } from '@/hooks/useBuilder';
 
 type Msg = { who: 'me' | 'ai'; text: string };
@@ -26,10 +27,18 @@ export default function AiChat({ b, variant, placeholder, onAdded }: { b?: Build
     setV(''); setOpen(true); setBusy(true);
     setMsgs((m) => [...m, { who: 'me', text: prompt }]);
     await new Promise((r) => setTimeout(r, 700));
-    const plan = planFromPrompt(prompt);
+    let plan = planFromPrompt(prompt), note = '';
+    try { // real LLM on the server; the built-in templates are only a fallback when no AI key is configured
+      const r = await api.aiGenerate(prompt, b?.form?.questions.map((q) => q.title).filter(Boolean) || []);
+      plan = { items: r.questions, intro: r.title ? `Here is “${r.title}”` : 'Here is a draft', title: r.title } as any;
+    } catch (e: any) {
+      if (!(e instanceof ApiError) || e.status === 401) { setBusy(false); return; }
+      if (e.status !== 503) { setBusy(false); setMsgs((m) => [...m, { who: 'ai', text: e.message || 'Something went wrong. Please try again.' }]); return; }
+      note = '\n(AI is not configured on this server yet, so I used a built-in template.)';
+    }
     let first = 0, n = 0, fid = 0;
     if (!b) { // dashboard: create a new form from the prompt
-      try { const t = prompt.replace(/^(create|make|build|generate)\s+(me\s+)?(a|an)?\s*/i, '').slice(0, 60); const f = await api.createForm(t.charAt(0).toUpperCase() + t.slice(1)); fid = f.id; for (const d of f.questions) await api.deleteQuestion(d.id).catch(() => {}); }
+      try { const t = ((plan as any).title || prompt.replace(/^(create|make|build|generate)\s+(me\s+)?(a|an)?\s*/i, '')).slice(0, 60); const f = await api.createForm(t.charAt(0).toUpperCase() + t.slice(1)); fid = f.id; for (const d of f.questions) await api.deleteQuestion(d.id).catch(() => {}); }
       catch (e: any) { setBusy(false); toast(e.message || 'Could not create the form', 'error'); return; }
     }
     for (const s of plan.items) {
@@ -43,7 +52,7 @@ export default function AiChat({ b, variant, placeholder, onAdded }: { b?: Build
       n++;
     }
     setBusy(false);
-    setMsgs((m) => [...m, { who: 'ai', text: n ? `${plan.intro} — I added ${n} question${n > 1 ? 's' : ''}:\n${plan.items.slice(0, n).map((s, i) => `${i + 1}. ${s.title}`).join('\n')}\nYou can edit, reorder or delete them in Content.` : 'Sorry, I could not add questions just now. Please try again.' }]);
+    setMsgs((m) => [...m, { who: 'ai', text: n ? `${plan.intro} — I added ${n} question${n > 1 ? 's' : ''}:\n${plan.items.slice(0, n).map((s, i) => `${i + 1}. ${s.title}`).join('\n')}\nYou can edit, reorder or delete them in Content.${note}` : 'Sorry, I could not add questions just now. Please try again.' }]);
     if (first) onAdded?.(first);
     if (fid) router.push(`/forms/${fid}/edit`);
   };
