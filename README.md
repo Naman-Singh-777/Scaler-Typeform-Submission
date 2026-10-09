@@ -2,7 +2,7 @@
 
 > ## **Database: SQLite by default, as specified.**
 >
-> The hosted demo uses Neon Postgres instead. Render's free hosting wipes its disk every time the server restarts (it also goes to sleep after 15 minutes without traffic). A SQLite file would be erased along with every account, form and response, so the demo keeps its data in Postgres.
+> The hosted demo runs on Neon Postgres instead. Render's free plan shuts the server down after 15 minutes without traffic, and every start-up after that (a wake-up, a restart or a new deploy) begins with a fresh, empty disk. A SQLite file lives on that disk, so every account, form and response would disappear each time the server restarted. Postgres is hosted separately from the server, so the data stays.
 
 A working clone of Typeform. You build a form in a drag-and-drop builder, publish it, send people the link, and they answer one question at a time in a full-screen, animated flow. Their answers show up in a results view with stats and a CSV export.
 
@@ -14,7 +14,7 @@ The API runs on Render's free tier and goes to sleep when idle. The first reques
 
 To look around quickly, open the live app, go to Log in, and press "Try the demo account". It signs you in as `creator@example.com` (password `demo1234`), which has three sample forms and about 40 responses. Or sign up with your own email and start from an empty workspace. Filling in a published form never needs an account.
 
-Note on the database: the project uses SQLite by default, as the brief asks. Running the backend locally (`uvicorn app.main:app`) needs no database setup and creates a seeded SQLite file. The hosted demo runs on Neon Postgres instead, because Render's free disk is wiped on every redeploy and visitors would lose their forms. The same SQLAlchemy models run unchanged on both, and Postgres is switched on only by setting `DATABASE_URL`.
+Run locally, the backend needs no database setup: it creates and seeds a SQLite file (`uvicorn app.main:app`). The same SQLAlchemy models run on both databases, and Postgres switches on only when `DATABASE_URL` is set.
 
 ## Stack
 
