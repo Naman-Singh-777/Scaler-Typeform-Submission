@@ -139,25 +139,33 @@ function Logic({ b, q }: { b: Builder; q: Question }) {
   );
 }
 
-export default function SettingsPanel({ b, sel, onDelete, onDuplicate }: { b: Builder; sel: Sel | null; onDelete: (id: number) => void; onDuplicate: (id: number) => void }) {
-  const [tab, setTab] = useState<'settings' | 'design' | 'logic'>('settings');
+export type PanelTab = 'settings' | 'design' | 'logic';
+
+export default function SettingsPanel({ b, sel, tab, onTab, onDelete, onDuplicate }: {
+  b: Builder; sel: Sel | null; tab: PanelTab; onTab: (t: PanelTab) => void; onDelete: (id: number) => void; onDuplicate: (id: number) => void;
+}) {
   const [confirm, setConfirm] = useState(false);
   const q = typeof sel === 'number' ? b.form!.questions.find((x) => x.id === sel) : undefined;
   const active = tab === 'logic' && !q ? 'settings' : tab;
   return (
     <aside className="bd-right">
-      <div className="tabs" role="tablist">
-        <button role="tab" className={active === 'settings' ? 'on' : ''} onClick={() => setTab('settings')}><Icon name="settings" size={16} />Settings</button>
-        <button role="tab" className={active === 'design' ? 'on' : ''} onClick={() => setTab('design')}><Icon name="palette" size={16} />Design</button>
-        <button role="tab" className={active === 'logic' ? 'on' : ''} onClick={() => setTab('logic')} disabled={!q} style={!q ? { opacity: 0.4 } : undefined}><Icon name="branch" size={16} />Logic</button>
-      </div>
-      <div className="panel">
-        {active === 'design' ? <Design b={b} />
-          : active === 'logic' && q ? <Logic b={b} q={q} />
-          : q ? <QuestionSettings b={b} q={q} onDuplicate={() => onDuplicate(q.id)} onDelete={() => setConfirm(true)} />
-          : <div className="soon-box">{sel === 'welcome' ? 'Edit your welcome screen on the canvas. Use the switch to show or hide it.'
-              : sel === 'end' ? 'Edit your thank-you screen on the canvas. Respondents see it after submitting.' : 'Select a question to see its settings.'}</div>}
-      </div>
+      <section className="bd-pane bd-set">
+        <div className="tabs" role="tablist">
+          <button role="tab" className={active === 'settings' ? 'on' : ''} onClick={() => onTab('settings')}>Settings</button>
+          <button role="tab" className={active === 'design' ? 'on' : ''} onClick={() => onTab('design')}>Design</button>
+        </div>
+        <div className="panel">
+          {active === 'design' ? <Design b={b} />
+            : active === 'logic' && q ? <Logic b={b} q={q} />
+            : q ? <QuestionSettings b={b} q={q} onDuplicate={() => onDuplicate(q.id)} onDelete={() => setConfirm(true)} />
+            : <div className="soon-box">{sel === 'welcome' ? 'Edit your welcome screen on the canvas. Use the switch to show or hide it.'
+                : sel === 'end' ? 'Edit your thank-you screen on the canvas. Respondents see it after submitting.' : 'Select a question to see its settings.'}</div>}
+        </div>
+      </section>
+      <section className={`bd-pane bd-logicbar ${active === 'logic' ? 'on' : ''}`}>
+        <span>Logic</span>
+        <button className="plus-btn" aria-label="Open logic" disabled={!q} title={q ? 'Add jump rules' : 'Select a question first'} onClick={() => onTab('logic')}><Icon name="plus" size={16} stroke={1.8} /></button>
+      </section>
       {confirm && q && (
         <Modal title="Delete this question?" onClose={() => setConfirm(false)}
           footer={<><button className="btn" onClick={() => setConfirm(false)}>Cancel</button>

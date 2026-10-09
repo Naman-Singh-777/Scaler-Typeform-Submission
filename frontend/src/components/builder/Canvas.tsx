@@ -65,7 +65,7 @@ function AnswerPreview({ q, b }: { q: Question; b: Builder }) {
   }
 }
 
-export default function Canvas({ b, sel }: { b: Builder; sel: Sel | null }) {
+export default function Canvas({ b, sel, mobile = false }: { b: Builder; sel: Sel | null; mobile?: boolean }) {
   const form = b.form!;
   const q = typeof sel === 'number' ? form.questions.find((x) => x.id === sel) : undefined;
   const idx = q ? form.questions.indexOf(q) : -1;
@@ -117,8 +117,10 @@ export default function Canvas({ b, sel }: { b: Builder; sel: Sel | null }) {
     );
   }
   return (
-    <div className="bd-center tf-theme" style={themeVars(form.theme)}>
-      <div className="canvas"><div style={{ width: '100%', maxWidth: 720 }}>{body}</div></div>
+    <div className="bd-stage">
+      <div className={`bd-frame tf-theme ${mobile ? 'is-mobile' : ''}`} style={themeVars(form.theme)}>
+        <div className="canvas"><div style={{ width: '100%', maxWidth: 720 }}>{body}</div></div>
+      </div>
     </div>
   );
 }

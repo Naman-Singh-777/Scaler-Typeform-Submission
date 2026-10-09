@@ -104,6 +104,7 @@ class FormListItem(BaseModel):
     status: str
     question_count: int
     response_count: int
+    started_count: int = 0
     theme: dict[str, Any]
     updated_at: UTCDatetime
 

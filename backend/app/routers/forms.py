@@ -47,8 +47,10 @@ def list_forms(db: Session = Depends(get_db), user: User = Depends(current_user)
     counts = dict(db.execute(
         select(FormResponse.form_id, func.count()).where(FormResponse.status == "completed").group_by(FormResponse.form_id)
     ).all())
+    started = dict(db.execute(select(FormResponse.form_id, func.count()).group_by(FormResponse.form_id)).all())
     return [FormListItem(id=f.id, title=f.title, slug=f.slug, status=f.status, question_count=len(f.questions),
-                         response_count=counts.get(f.id, 0), theme=f.theme, updated_at=f.updated_at) for f in forms]
+                         response_count=counts.get(f.id, 0), started_count=started.get(f.id, 0),
+                         theme=f.theme, updated_at=f.updated_at) for f in forms]
 
 
 @router.post("/forms", response_model=FormOut, status_code=201)

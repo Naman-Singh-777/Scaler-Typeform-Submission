@@ -14,7 +14,7 @@ export interface Form {
   thankyou_title: string; thankyou_description: string;
   created_at: string; updated_at: string; published_at: string | null; questions: Question[];
 }
-export interface FormListItem { id: number; title: string; slug: string; status: 'draft' | 'published'; question_count: number; response_count: number; theme: Theme; updated_at: string }
+export interface FormListItem { id: number; title: string; slug: string; status: 'draft' | 'published'; question_count: number; response_count: number; started_count: number; theme: Theme; updated_at: string }
 export interface FormResponse { id: number; status: 'completed' | 'partial'; started_at: string; submitted_at: string | null; answers: Record<string, any> }
 export interface ResponsePage { total: number; items: FormResponse[] }
 export interface QuestionSummary {

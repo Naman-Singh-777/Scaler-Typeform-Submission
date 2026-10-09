@@ -41,23 +41,36 @@ export default function QuestionList({ form, sel, onSelect, onReorder, onDuplica
     onReorder(arrayMove(ids, ids.indexOf(e.active.id as number), ids.indexOf(e.over.id as number)));
   };
   return (
-    <div className="bd-list">
-      <div className={`qsection ${sel === 'welcome' ? 'sel' : ''}`} onClick={() => onSelect('welcome')}>
-        <span className="qicon"><Icon name="welcome" size={15} /></span>Welcome screen
-        {!form.welcome_enabled && <span className="pill soon" style={{ marginLeft: 'auto' }}>Off</span>}
-      </div>
-      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
-        <SortableContext items={ids} strategy={verticalListSortingStrategy}>
-          {form.questions.map((q, i) => (
-            <Row key={q.id} q={q} n={i + 1} selected={sel === q.id} onSelect={() => onSelect(q.id)}
-              onDuplicate={() => onDuplicate(q.id)} onDelete={() => onDelete(q.id)} />
-          ))}
-        </SortableContext>
-      </DndContext>
-      {form.questions.length === 0 && <p className="muted" style={{ padding: '14px 10px' }}>No questions yet. Click “Add content” to create one.</p>}
-      <div className={`qsection ${sel === 'end' ? 'sel' : ''}`} onClick={() => onSelect('end')}>
-        <span className="qicon"><Icon name="flag" size={15} /></span>Thank you screen
-      </div>
-    </div>
+    <>
+      <section className="bd-pane bd-pages">
+        <h3 className="bd-pane-h">Pages</h3>
+        <div className="bd-list">
+          <div className={`qsection ${sel === 'welcome' ? 'sel' : ''}`} onClick={() => onSelect('welcome')}>
+            <span className="qicon"><Icon name="welcome" size={15} /></span>Welcome screen
+            {!form.welcome_enabled && <span className="pill soon" style={{ marginLeft: 'auto' }}>Off</span>}
+          </div>
+          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
+            <SortableContext items={ids} strategy={verticalListSortingStrategy}>
+              {form.questions.map((q, i) => (
+                <Row key={q.id} q={q} n={i + 1} selected={sel === q.id} onSelect={() => onSelect(q.id)}
+                  onDuplicate={() => onDuplicate(q.id)} onDelete={() => onDelete(q.id)} />
+              ))}
+            </SortableContext>
+          </DndContext>
+          {form.questions.length === 0 && <p className="bd-empty">No questions yet. Click “Add content” to create one.</p>}
+        </div>
+      </section>
+      <div className="bd-handle" aria-hidden />
+      <section className="bd-pane bd-endings">
+        <div className="bd-pane-h row">Endings
+          <button className="plus-btn" aria-label="Edit thank you screen" title="Edit thank you screen" onClick={() => onSelect('end')}><Icon name="plus" size={16} stroke={1.8} /></button>
+        </div>
+        <div className="bd-list">
+          <div className={`qsection ${sel === 'end' ? 'sel' : ''}`} onClick={() => onSelect('end')}>
+            <span className="qicon"><Icon name="flag" size={15} /></span>Thank you screen
+          </div>
+        </div>
+      </section>
+    </>
   );
 }

@@ -3,12 +3,13 @@ import { useState } from 'react';
 import Link from 'next/link';
 import Icon from './Icon';
 import Modal from './Modal';
-import FormRunner from './runner/FormRunner';
+import UserMenu from './UserMenu';
 import { useToast } from './Toast';
 import { publicUrl } from '@/lib/api';
 import type { Builder } from '@/hooks/useBuilder';
 
-const TABS = [['edit', 'Create'], ['connect', 'Connect'], ['share', 'Share'], ['results', 'Results']] as const;
+const TABS = [['edit', 'Content'], ['workflow', 'Workflow'], ['connect', 'Connect'], ['results', 'Results']] as const;
+type Tab = (typeof TABS)[number][0] | 'share';
 
 export function CopyLink({ slug }: { slug: string }) {
   const toast = useToast();
@@ -21,10 +22,9 @@ export function CopyLink({ slug }: { slug: string }) {
   );
 }
 
-export default function FormHeader({ b, tab }: { b: Builder; tab: (typeof TABS)[number][0] }) {
+export default function FormHeader({ b, tab }: { b: Builder; tab: Tab }) {
   const { form } = b;
   const toast = useToast();
-  const [preview, setPreview] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   if (!form) return <div className="fh" />;
@@ -40,25 +40,28 @@ export default function FormHeader({ b, tab }: { b: Builder; tab: (typeof TABS)[
     <>
       <header className="fh">
         <div className="fh-left">
-          <Link href="/dashboard" className="icon-btn" aria-label="Back to workspace" title="Back to workspace"><Icon name="left" /></Link>
+          <Link href="/dashboard" className="fh-crumb" title="Back to workspace"><Icon name="forms" size={18} stroke={1.6} />Forms</Link>
+          <Icon name="chevright" size={14} stroke={1.8} className="fh-sep" />
           <input className="fh-title" value={form.title} maxLength={200} aria-label="Form name" size={Math.min(Math.max(form.title.length, 6), 32)}
             onChange={(e) => b.updateForm({ title: e.target.value })}
             onBlur={() => !form.title.trim() && b.updateForm({ title: 'Untitled form' })} />
-          <span className={`pill ${form.status === 'published' ? 'live' : ''}`}>{form.status === 'published' ? 'Published' : 'Draft'}</span>
         </div>
         <nav className="fh-tabs">
-          {TABS.map(([k, l]) => <Link key={k} href={`/forms/${form.id}/${k}`} className={tab === k ? 'on' : ''}>{l}</Link>)}
+          {TABS.map(([k, l]) => k === 'workflow'
+            ? <button key={k} onClick={() => toast('Workflows are coming soon', 'info')}>{l}</button>
+            : <Link key={k} href={`/forms/${form.id}/${k}`} className={tab === k ? 'on' : ''}>{l}</Link>)}
         </nav>
         <div className="fh-right">
           <span className="saving">{label}</span>
-          <button className="btn" onClick={() => form.questions.length ? setPreview(true) : toast('Add a question to preview', 'info')}><Icon name="eye" size={16} />Preview</button>
+          <Link href={`/forms/${form.id}/share`} className={`btn ${tab === 'share' ? 'primary' : ''}`}><Icon name="send" size={16} stroke={1.6} />Share</Link>
+          <span className="fh-divider" />
           {form.status === 'published'
-            ? <><button className="btn" onClick={() => setShareOpen(true)}><Icon name="link" size={16} />Link</button>
-                <button className="btn" onClick={b.unpublish}>Unpublish</button></>
-            : <button className="btn primary" disabled={busy} onClick={doPublish}>{busy ? 'Publishing…' : 'Publish'}</button>}
+            ? <button className="btn" onClick={b.unpublish}>Unpublish</button>
+            : <button className="btn green" disabled={busy} onClick={doPublish}>{busy ? 'Publishing…' : 'Publish'}</button>}
+          <button className="icon-btn" aria-label="Help" onClick={() => toast('Help center is coming soon', 'info')}><Icon name="help" size={20} stroke={1.5} /></button>
+          <UserMenu />
         </div>
       </header>
-      {preview && <div className="tf-fullscreen"><FormRunner key={Date.now()} form={form} mode="preview" onClose={() => setPreview(false)} /></div>}
       {shareOpen && (
         <Modal title="🎉 Your form is live!" onClose={() => setShareOpen(false)} footer={
           <><a className="btn" href={`/to/${form.slug}`} target="_blank" rel="noreferrer"><Icon name="external" size={16} />Open form</a>

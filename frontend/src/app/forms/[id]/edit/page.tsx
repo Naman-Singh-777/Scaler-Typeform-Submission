@@ -3,16 +3,24 @@ import { useEffect, useState } from 'react';
 import AddContentModal from '@/components/builder/AddContentModal';
 import Canvas from '@/components/builder/Canvas';
 import QuestionList, { type Sel } from '@/components/builder/QuestionList';
-import SettingsPanel from '@/components/builder/SettingsPanel';
+import SettingsPanel, { type PanelTab } from '@/components/builder/SettingsPanel';
+import AskAi from '@/components/AskAi';
 import FormHeader from '@/components/FormHeader';
 import Icon from '@/components/Icon';
+import FormRunner from '@/components/runner/FormRunner';
+import { useToast } from '@/components/Toast';
 import { useBuilder } from '@/hooks/useBuilder';
 
 export default function BuilderPage({ params }: { params: { id: string } }) {
   const b = useBuilder(Number(params.id));
+  const toast = useToast();
   const { form } = b;
   const [sel, setSel] = useState<Sel | null>(null);
   const [adding, setAdding] = useState(false);
+  const [preview, setPreview] = useState(false);
+  const [mobile, setMobile] = useState(false);
+  const [rightOpen, setRightOpen] = useState(true);
+  const [tab, setTab] = useState<PanelTab>('settings');
 
   useEffect(() => { if (form && sel === null) setSel(form.questions[0]?.id ?? 'welcome'); }, [form, sel]);
   useEffect(() => { if (form) document.title = `${form.title} — Create`; }, [form?.title]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -27,22 +35,38 @@ export default function BuilderPage({ params }: { params: { id: string } }) {
     const rest = form.questions.filter((q) => q.id !== id);
     setSel(rest[Math.min(i, rest.length - 1)]?.id ?? 'welcome');
   };
+  const dup = async (id: number) => { const q = await b.duplicateQuestion(id); if (q) setSel(q.id); };
+  const openPanel = (t: PanelTab) => { setTab(t); setRightOpen(true); };
 
   return (
     <>
       <FormHeader b={b} tab="edit" />
-      <div className="bd">
+      <div className={`bd ${rightOpen ? '' : 'no-right'}`}>
         <aside className="bd-left">
-          <div className="bd-left-head">Content</div>
-          <QuestionList form={form} sel={sel} onSelect={setSel} onReorder={b.reorder} onDelete={del}
-            onDuplicate={async (id) => { const q = await b.duplicateQuestion(id); if (q) setSel(q.id); }} />
-          <div className="bd-left-foot"><button className="btn primary" onClick={() => setAdding(true)}><Icon name="plus" size={18} stroke={2.4} />Add content</button></div>
+          <div className="bd-mode"><button onClick={() => toast('Only Universal mode is available', 'info')}><Icon name="pages" size={16} stroke={1.6} />Universal mode<Icon name="chevdown" size={18} stroke={1.6} className="grow-end" /></button></div>
+          <QuestionList form={form} sel={sel} onSelect={setSel} onReorder={b.reorder} onDelete={del} onDuplicate={dup} />
+          <AskAi />
         </aside>
-        <Canvas b={b} sel={sel} />
-        <SettingsPanel b={b} sel={sel} onDelete={del} onDuplicate={async (id) => { const q = await b.duplicateQuestion(id); if (q) setSel(q.id); }} />
+        <div className="bd-center">
+          <div className="bd-toolbar">
+            <button className="btn primary" onClick={() => setAdding(true)}><Icon name="plus" size={16} stroke={1.8} />Add content</button>
+            <span className="tb-sep" />
+            <button className={`tb-btn ${rightOpen && tab === 'design' ? 'on' : ''}`} onClick={() => openPanel('design')}><Icon name="palette" size={16} stroke={1.6} />Design</button>
+            <span className="tb-sep" />
+            <button className={`tb-ico ${mobile ? 'on' : ''}`} aria-label="Toggle mobile preview" title="Mobile view" onClick={() => setMobile(!mobile)}><Icon name="mobile" size={18} stroke={1.6} /></button>
+            <button className="tb-ico" aria-label="Preview form" title="Preview" onClick={() => form.questions.length ? setPreview(true) : toast('Add a question to preview', 'info')}><Icon name="play" size={18} stroke={1.6} /></button>
+            <span className="tb-sep" />
+            <button className="tb-ico" aria-label="Form settings" title="Settings" onClick={() => openPanel('settings')}><Icon name="settings" size={18} stroke={1.6} /></button>
+            <span className="spacer" />
+            <button className="tb-ico" aria-label="Toggle side panel" title="Toggle panel" onClick={() => setRightOpen(!rightOpen)}><Icon name="panel" size={18} stroke={1.6} /></button>
+          </div>
+          <Canvas b={b} sel={sel} mobile={mobile} />
+        </div>
+        {rightOpen && <SettingsPanel b={b} sel={sel} tab={tab} onTab={setTab} onDelete={del} onDuplicate={dup} />}
       </div>
       {adding && <AddContentModal onClose={() => setAdding(false)}
         onPick={async (t) => { setAdding(false); const q = await b.addQuestion(t, insertAt); if (q) setSel(q.id); }} />}
+      {preview && <div className="tf-fullscreen"><FormRunner key={Date.now()} form={form} mode="preview" onClose={() => setPreview(false)} /></div>}
     </>
   );
 }
