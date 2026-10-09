@@ -334,3 +334,10 @@
 
 /* per-section vertical rhythm measured on the reference page (desktop) */
 .tm--a { padding: 120px 0 119px; } .tm--b { padding: 120px 0 79px; } .tm--c { padding: 80px 0 158px; }
+
+/* Wistia embeds (same videos as typeform.com) */
+.wvid { position: absolute; inset: 0; overflow: hidden; display: flex; align-items: center; background: transparent; }
+.wvid__inner { position: relative; width: 100%; padding-top: calc(100% / var(--wr)); height: 0; }
+.wvid__inner > * { position: absolute !important; inset: 0; width: 100% !important; height: 100% !important; }
+.hero__vbox .wvid, .tm__media .wvid { border-radius: inherit; }
+.hero__vbox, .tm__media { position: relative; }

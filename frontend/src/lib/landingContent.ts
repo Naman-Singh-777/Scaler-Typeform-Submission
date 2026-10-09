@@ -38,9 +38,9 @@ export const NAV_MENUS: { label: string; cols: MenuCol[]; promos?: { eyebrow: st
 ];
 
 export const HERO_TABS = [
-  { k: 'ASK', title: 'Intelligent Forms', desc: 'Build forms that adapt to every respondent and then analyze your data for rich insights.', video: '/landing/hero-ask.mp4' },
-  { k: 'ACT', title: 'Growth Flow', isNew: true, desc: 'Convert and keep customers with automated AI segmentation and follow-ups.', video: '/landing/hero-act.mp4' },
-  { k: 'LEARN', title: 'Research Flow', isNew: true, desc: 'Make confident business decisions fast with AI‑moderated studies and automated reports.', video: '/landing/hero-learn.mp4' },
+  { k: 'ASK', title: 'Intelligent Forms', desc: 'Build forms that adapt to every respondent and then analyze your data for rich insights.', wistia: '2xnbogakrp' },
+  { k: 'ACT', title: 'Growth Flow', isNew: true, desc: 'Convert and keep customers with automated AI segmentation and follow-ups.', wistia: 'zki3yjc4q4' },
+  { k: 'LEARN', title: 'Research Flow', isNew: true, desc: 'Make confident business decisions fast with AI‑moderated studies and automated reports.', wistia: 't7cmlcvvv1' },
 ];
 
 export type Feature = { icon: string; title: string; desc: string };
