@@ -19,7 +19,7 @@ function Auto({ value, onChange, placeholder, className, label, single = true }:
   );
 }
 
-function ChoiceEditor({ q, b }: { q: Question; b: Builder }) {
+function ChoiceEditor({ q, b, onLogic }: { q: Question; b: Builder; onLogic?: () => void }) {
   const set = (choices: Question['choices']) => b.updateQuestion(q.id, { choices });
   return (
     <div>
@@ -31,7 +31,8 @@ function ChoiceEditor({ q, b }: { q: Question; b: Builder }) {
               onChange={(e) => set(q.choices.map((x) => (x.id === c.id ? { ...x, label: e.target.value } : x)))}
               onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); set([...q.choices.slice(0, i + 1), { id: newTempId(), label: '' }, ...q.choices.slice(i + 1)]); } }} />
           </div>
-          <button className="rm" aria-label="Remove choice" disabled={q.choices.length <= 1} onClick={() => set(q.choices.filter((x) => x.id !== c.id))}><Icon name="x" size={14} /></button>
+          <button className="cv-act" aria-label="Remove choice" title="Remove choice" disabled={q.choices.length <= 1} onClick={() => set(q.choices.filter((x) => x.id !== c.id))}><Icon name="xcircle" size={18} stroke={1.6} /></button>
+          {onLogic && <button className="cv-act" aria-label="Add logic" title="Branching: jump rules for this question" onClick={onLogic}><Icon name="branch" size={18} stroke={1.6} /></button>}
         </div>
       ))}
       <button className="cv-add" onClick={() => set([...q.choices, { id: newTempId(), label: '' }])}>+ Add choice</button>
@@ -39,7 +40,7 @@ function ChoiceEditor({ q, b }: { q: Question; b: Builder }) {
   );
 }
 
-function AnswerPreview({ q, b }: { q: Question; b: Builder }) {
+function AnswerPreview({ q, b, onLogic }: { q: Question; b: Builder; onLogic?: () => void }) {
   switch (q.type) {
     case 'short_text': case 'email': case 'number':
       return <input className="tf-input cv-fake" readOnly tabIndex={-1} placeholder={q.settings.placeholder} />;
@@ -60,14 +61,14 @@ function AnswerPreview({ q, b }: { q: Question; b: Builder }) {
       return (
         <>
           <div className="tf-dropdown cv-fake" style={{ marginBottom: 18 }}><input className="tf-input" readOnly tabIndex={-1} placeholder={q.settings.placeholder} /><Icon name="down" size={22} className="chev" /></div>
-          <ChoiceEditor q={q} b={b} />
+          <ChoiceEditor q={q} b={b} onLogic={onLogic} />
         </>
       );
-    case 'multiple_choice': return <ChoiceEditor q={q} b={b} />;
+    case 'multiple_choice': return <ChoiceEditor q={q} b={b} onLogic={onLogic} />;
   }
 }
 
-export default function Canvas({ b, sel, mobile = false }: { b: Builder; sel: Sel | null; mobile?: boolean }) {
+export default function Canvas({ b, sel, mobile = false, onLogic }: { b: Builder; sel: Sel | null; mobile?: boolean; onLogic?: () => void }) {
   const form = b.form!;
   const q = typeof sel === 'number' ? form.questions.find((x) => x.id === sel) : undefined;
   const idx = q ? form.questions.indexOf(q) : -1;
@@ -113,7 +114,7 @@ export default function Canvas({ b, sel, mobile = false }: { b: Builder; sel: Se
         <div style={{ paddingLeft: 46 }}>
           <Auto className="cv-desc" label="Description" placeholder="Description (optional)" single={false} value={q.description} onChange={(v) => b.updateQuestion(q.id, { description: v })} />
         </div>
-        <div className="tf-answer"><AnswerPreview q={q} b={b} /></div>
+        <div className="tf-answer"><AnswerPreview q={q} b={b} onLogic={onLogic} /></div>
         <div className="tf-actions cv-fake"><span className="tf-ok">OK<Icon name="check" size={20} stroke={2.4} /></span><span className="tf-hint">press <b>Enter</b> ↵</span></div>
       </div>
     );

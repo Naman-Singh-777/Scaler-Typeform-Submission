@@ -4,7 +4,7 @@ import AddContentModal from '@/components/builder/AddContentModal';
 import Canvas from '@/components/builder/Canvas';
 import QuestionList, { type Sel } from '@/components/builder/QuestionList';
 import SettingsPanel, { type PanelTab } from '@/components/builder/SettingsPanel';
-import AskAi from '@/components/AskAi';
+import AiChat from '@/components/AiChat';
 import FormHeader from '@/components/FormHeader';
 import Icon from '@/components/Icon';
 import FormRunner from '@/components/runner/FormRunner';
@@ -45,7 +45,6 @@ export default function BuilderPage({ params }: { params: { id: string } }) {
         <aside className="bd-left">
           <div className="bd-mode"><button onClick={() => toast('Only Universal mode is available', 'info')}><Icon name="pages" size={16} stroke={1.6} />Universal mode<Icon name="chevdown" size={18} stroke={1.6} className="grow-end" /></button></div>
           <QuestionList form={form} sel={sel} onSelect={setSel} onReorder={b.reorder} onDelete={del} onDuplicate={dup} />
-          <AskAi b={b} onAdded={(id) => setSel(id)} />
         </aside>
         <div className="bd-center">
           <div className="bd-toolbar">
@@ -60,7 +59,8 @@ export default function BuilderPage({ params }: { params: { id: string } }) {
             <span className="spacer" />
             <button className="tb-ico" aria-label="Toggle side panel" title="Toggle panel" onClick={() => setRightOpen(!rightOpen)}><Icon name="panel" size={18} stroke={1.6} /></button>
           </div>
-          <Canvas b={b} sel={sel} mobile={mobile} />
+          <Canvas b={b} sel={sel} mobile={mobile} onLogic={() => openPanel('logic')} />
+          <div className="bd-aibar"><AiChat b={b} variant="bar" placeholder="Chat to create" onAdded={(id) => setSel(id)} /></div>
         </div>
         {rightOpen && <SettingsPanel b={b} sel={sel} tab={tab} onTab={setTab} onDelete={del} onDuplicate={dup} />}
       </div>
