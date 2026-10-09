@@ -44,7 +44,7 @@ def ask_llm(system: str, messages: list[dict], max_tokens: int = 1200, temperatu
             return "".join(b.get("text", "") for b in r.json()["content"])
         base = os.getenv("LLM_BASE_URL", "https://generativelanguage.googleapis.com/v1beta/openai").rstrip("/")
         r = httpx.post(f"{base}/chat/completions", timeout=40, headers={"Authorization": f"Bearer {os.environ['LLM_API_KEY']}"}, json={
-            "model": os.getenv("LLM_MODEL", "gemini-2.5-flash-lite"), "max_tokens": max_tokens, "temperature": temperature,
+            "model": os.getenv("LLM_MODEL", "gemini-3.5-flash-lite"), "max_tokens": max_tokens, "temperature": temperature,
             "messages": [{"role": "system", "content": system}, *messages]})
         r.raise_for_status()
         return r.json()["choices"][0]["message"]["content"]
