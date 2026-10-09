@@ -1,0 +1,15 @@
+.au{min-height:100vh;display:grid;grid-template-columns:minmax(320px,44%) 1fr;font-family:'Hanken Grotesk Variable',system-ui,sans-serif;background:#FAF9FB;color:#2A222B}
+.au__side{background:#2A222B;color:#FAF9FB;padding:32px 48px;display:flex;flex-direction:column;background-image:radial-gradient(90% 50% at 50% 115%,rgba(182,109,213,.75),transparent 70%)}
+.au__logo{display:flex;align-items:center;height:24px;color:#FAF9FB}.au__logo span:first-child{width:43px;height:24px}.au__logo span:last-child{width:109px;height:24px}
+.au__side h1{font-family:'Newsreader Variable',serif;font-weight:400;font-size:72px;line-height:72px;letter-spacing:-1px;margin:auto 0 16px}
+.au__side p{margin:0 0 48px;font-size:20px;color:#D4D1D5}
+.au__main{display:grid;place-items:center;padding:32px}
+.au__card{width:420px;max-width:100%;display:flex;flex-direction:column;gap:14px}
+.au__card h2{font-family:'Newsreader Variable',serif;font-weight:400;font-size:36px;line-height:40px;margin:0 0 8px}
+.au__card label{display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:500}
+.au__card input{height:48px;border-radius:12px;border:1px solid #CFCAD1;padding:0 14px;font:inherit;font-size:16px;background:#fff;color:inherit}
+.au__card input:focus{outline:2px solid #B66DD5;border-color:transparent}
+.au__btn{height:48px;border-radius:12px;border:0;background:#2A222B;color:#FAF9FB;font:inherit;font-weight:500;cursor:pointer;margin-top:6px;transition:transform .2s,box-shadow .2s}
+.au__btn:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 8px 24px rgba(160,87,187,.35)}.au__btn:disabled{opacity:.6}
+.au__err{color:#C0392B;font-size:14px}.au__alt{margin:0;font-size:14px;color:#6B626D}.au__alt a{color:#A057BB;font-weight:500}
+@media(max-width:800px){.au{grid-template-columns:1fr}.au__side{padding:24px;min-height:220px}.au__side h1{font-size:44px;line-height:46px;margin-top:24px}.au__side p{display:none}}

@@ -1,0 +1,13 @@
+.DS_Store
+*.zip
+_dl/
+_to_delete/
+node_modules/
+.next/
+.venv/
+__pycache__/
+*.db
+*.tsbuildinfo
+.env*
+!.env.example
+*.log

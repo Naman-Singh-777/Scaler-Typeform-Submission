@@ -1,0 +1,45 @@
+import React from 'react';
+
+const P: Record<string, React.ReactNode> = {
+  short: <path d="M4 9h16M4 15h10" />,
+  long: <path d="M4 6h16M4 11h16M4 16h16M4 21h9" />,
+  choice: <><circle cx="5" cy="7" r="1.6" /><circle cx="5" cy="17" r="1.6" /><path d="M10 7h10M10 17h10" /></>,
+  dropdown: <><rect x="3" y="5" width="18" height="14" rx="2.5" /><path d="m9 11 3 3 3-3" /></>,
+  yesno: <><path d="m4 8 3 3 5-6" /><path d="m14 14 6 6m0-6-6 6" /></>,
+  email: <><circle cx="12" cy="12" r="3.5" /><path d="M15.5 12v1.5a2.5 2.5 0 0 0 5 0V12a8.5 8.5 0 1 0-3.4 6.8" /></>,
+  number: <path d="M9 4 7 20M17 4l-2 16M4 9h17M3 15h17" />,
+  star: <path d="m12 3.5 2.6 5.4 5.9.8-4.3 4.1 1 5.9L12 17l-5.2 2.7 1-5.9L3.5 9.7l5.9-.8z" />,
+  upload: <path d="M12 16V4m0 0-4 4m4-4 4 4M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3" />,
+  card: <><rect x="3" y="5" width="18" height="14" rx="2" /><path d="M3 10h18" /></>,
+  plus: <path d="M12 5v14M5 12h14" />,
+  trash: <path d="M5 7h14M10 7V4h4v3m-8 0 1 13h10l1-13M10 11v6m4-6v6" />,
+  copy: <><rect x="8" y="8" width="12" height="12" rx="2" /><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3" /></>,
+  drag: <><circle cx="9" cy="6" r="1.2" /><circle cx="15" cy="6" r="1.2" /><circle cx="9" cy="12" r="1.2" /><circle cx="15" cy="12" r="1.2" /><circle cx="9" cy="18" r="1.2" /><circle cx="15" cy="18" r="1.2" /></>,
+  eye: <><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z" /><circle cx="12" cy="12" r="3" /></>,
+  link: <path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3A4 4 0 0 0 10 18.7l1-1" />,
+  up: <path d="m6 15 6-6 6 6" />,
+  down: <path d="m6 9 6 6 6-6" />,
+  right: <path d="M5 12h14m-6-6 6 6-6 6" />,
+  left: <path d="M19 12H5m6-6-6 6 6 6" />,
+  check: <path d="m5 12.5 4.5 4.5L19 7.5" />,
+  x: <path d="m6 6 12 12M18 6 6 18" />,
+  dots: <><circle cx="5" cy="12" r="1.5" /><circle cx="12" cy="12" r="1.5" /><circle cx="19" cy="12" r="1.5" /></>,
+  search: <><circle cx="11" cy="11" r="6.5" /><path d="m20 20-4-4" /></>,
+  grid: <><rect x="4" y="4" width="6.5" height="6.5" rx="1" /><rect x="13.5" y="4" width="6.5" height="6.5" rx="1" /><rect x="4" y="13.5" width="6.5" height="6.5" rx="1" /><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1" /></>,
+  list: <path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01" />,
+  palette: <><path d="M12 3a9 9 0 1 0 0 18c1.4 0 2-1 1.6-2.1-.5-1.3.3-2.4 1.6-2.4H17a4 4 0 0 0 4-4C21 6.8 17 3 12 3z" /><circle cx="7.5" cy="11" r="1" /><circle cx="10" cy="7.5" r="1" /><circle cx="14.5" cy="7.5" r="1" /></>,
+  branch: <><circle cx="6" cy="5" r="2" /><circle cx="6" cy="19" r="2" /><circle cx="18" cy="9" r="2" /><path d="M6 7v10M18 11c0 4-6 3-12 6" /></>,
+  settings: <><circle cx="12" cy="12" r="3" /><path d="M12 3v3m0 12v3M3 12h3m12 0h3m-2.6-6.4-2.1 2.1M8.7 15.3l-2.1 2.1m0-10.8 2.1 2.1m6.6 6.6 2.1 2.1" /></>,
+  download: <path d="M12 4v12m0 0-4-4m4 4 4-4M4 20h16" />,
+  external: <path d="M14 4h6v6m0-6-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5" />,
+  welcome: <path d="M5 12a7 7 0 0 1 14 0v7H5zM9 14h.01M15 14h.01M10 17c1.2.8 2.8.8 4 0" />,
+  flag: <path d="M5 21V4m0 0h11l-2 4 2 4H5" />,
+  sparkle: <path d="M12 3v4m0 10v4M3 12h4m10 0h4M6 6l2.5 2.5M15.5 15.5 18 18M18 6l-2.5 2.5M8.5 15.5 6 18" />,
+};
+
+export default function Icon({ name, size = 20, stroke = 1.8, className, style }: { name: string; size?: number; stroke?: number; className?: string; style?: React.CSSProperties }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={stroke}
+      strokeLinecap="round" strokeLinejoin="round" className={className} style={style} aria-hidden>{P[name]}</svg>
+  );
+}
