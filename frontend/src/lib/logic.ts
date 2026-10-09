@@ -2,6 +2,7 @@
 import type { Question, Rule } from './types';
 
 export const END = -2;
+export const MAX_UPLOAD = 5 * 1024 * 1024; // keep in sync with backend MAX_UPLOAD_BYTES
 export const isEmpty = (v: any) => v === undefined || v === null || v === '' || (Array.isArray(v) && v.length === 0);
 const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]{2,}$/;
 
@@ -19,6 +20,7 @@ export function validateAnswer(q: Question, v: any): string | null {
     }
     case 'short_text': return String(v).length > 2000 ? 'That answer is too long' : null;
     case 'long_text': return String(v).length > 10000 ? 'That answer is too long' : null;
+    case 'file_upload': return v && v.size > MAX_UPLOAD ? 'Files must be 5 MB or smaller' : null;
     default: return null;
   }
 }

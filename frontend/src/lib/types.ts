@@ -1,4 +1,4 @@
-export type QType = 'short_text' | 'long_text' | 'multiple_choice' | 'dropdown' | 'email' | 'number' | 'yes_no' | 'rating';
+export type QType = 'short_text' | 'long_text' | 'multiple_choice' | 'dropdown' | 'email' | 'number' | 'yes_no' | 'rating' | 'file_upload';
 export type RuleOp = 'equals' | 'not_equals' | 'contains' | 'greater_than' | 'less_than';
 
 export interface Choice { id: number; label: string }

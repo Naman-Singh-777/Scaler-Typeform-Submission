@@ -314,3 +314,38 @@
   .cookie { left: 12px; right: 12px; bottom: 12px; width: auto; }
   .ty { display: none; }
 }
+
+/* ---------- animated section visuals (original, CSS only) ---------- */
+.lp .sv { position: relative; width: 100%; height: 100%; overflow: hidden; --t: 10s; font-family: var(--sans); }
+.lp .sv--forms { background: linear-gradient(135deg, #efedf2 0%, #ddd6e8 100%); color: #2A222B; }
+.lp .sv-prompt { position: absolute; top: 11%; left: 9%; right: 9%; padding: 18px 22px; border-radius: 18px; background: rgba(255,255,255,.72); box-shadow: 0 10px 40px rgba(160,87,187,.22); font-size: clamp(14px, 2.1vw, 22px); }
+.lp .sv-typed { display: block; overflow: hidden; white-space: nowrap; width: 0; border-right: 2px solid #2A222B; animation: svType var(--t) steps(40, end) infinite; }
+.lp .sv-card { position: absolute; left: 14%; right: 14%; bottom: 9%; padding: 7% 8%; border-radius: 18px; background: #5b4a1c; color: #fbf3df; display: flex; flex-direction: column; gap: 10px; box-shadow: 0 18px 40px rgba(0,0,0,.25); opacity: 0; animation: svCard var(--t) cubic-bezier(.22,.8,.25,1) infinite; }
+.lp .sv-card small { opacity: .7; } .lp .sv-card b { font-weight: 600; font-size: clamp(15px, 2.4vw, 26px); }
+.lp .sv-stars { display: flex; gap: 6px; } .lp .sv-stars svg { width: clamp(22px, 3.6vw, 40px); fill: none; stroke: #fbf3df; stroke-width: 1.5; animation: svStar var(--t) infinite; animation-delay: calc(var(--i) * .28s); }
+.lp .sv-ok { align-self: flex-start; margin-top: 4px; background: #e8f98a; color: #2c3a00; border-radius: 6px; padding: 5px 14px; font-weight: 700; font-size: 14px; }
+@keyframes svType { 0%, 4% { width: 0 } 30%, 92% { width: 40ch } 97%, 100% { width: 0 } }
+@keyframes svCard { 0%, 33% { opacity: 0; transform: translateY(26px) scale(.97) } 42%, 92% { opacity: 1; transform: none } 97%, 100% { opacity: 0; transform: translateY(10px) } }
+@keyframes svStar { 0%, 50% { fill: transparent } 55%, 92% { fill: #fbf3df } 97%, 100% { fill: transparent } }
+
+.lp .sv--growth { background: radial-gradient(circle at 20% 15%, #4b3552 0%, #2f2433 60%); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0; padding: 6%; color: #f5eef8; }
+.lp .sv-node { width: min(74%, 330px); padding: 14px 18px; border-radius: 14px; background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.18); display: grid; grid-template-columns: auto 1fr; column-gap: 12px; align-items: center; font-weight: 600; opacity: .35; animation: svNode var(--t) infinite; }
+.lp .sv-node em { grid-column: 2; font-style: normal; font-weight: 450; font-size: 13px; opacity: .75; }
+.lp .sv-node .av { grid-row: span 2; width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, #ECCFFA, #A057BB); }
+.lp .sv-node .tick { grid-row: span 2; width: 34px; height: 34px; border-radius: 50%; background: #5ed19a; color: #12301f; display: grid; place-items: center; font-weight: 800; }
+.lp .sv-node.n2 { animation-delay: 1.6s; } .lp .sv-node.n3 { animation-delay: 3.4s; }
+.lp .sv-wire { width: 3px; height: 8%; min-height: 22px; background: linear-gradient(#ECCFFA 50%, transparent 50%) 0 0 / 3px 12px; animation: svFlow .7s linear infinite; opacity: .8; }
+@keyframes svNode { 0% { opacity: .35; transform: scale(.97) } 8%, 62% { opacity: 1; transform: none; box-shadow: 0 0 0 3px rgba(236,207,250,.35) } 80%, 100% { opacity: .35; transform: scale(.97) } }
+@keyframes svFlow { to { background-position: 0 12px } }
+
+.lp .sv--research { background: linear-gradient(160deg, #3b2c40, #281f2b); color: #f5eef8; padding: 6%; display: flex; flex-direction: column; gap: 10px; }
+.lp .sv-bub { max-width: 62%; padding: 10px 14px; border-radius: 16px; font-size: clamp(12px, 1.7vw, 16px); opacity: 0; animation: svBub var(--t) infinite; }
+.lp .sv-bub.b1 { background: #A057BB; border-bottom-left-radius: 4px; }
+.lp .sv-bub.b2 { background: rgba(255,255,255,.14); align-self: flex-end; border-bottom-right-radius: 4px; animation-delay: 1.4s; }
+.lp .sv-bub.b3 { background: #A057BB; border-bottom-left-radius: 4px; animation-delay: 2.8s; }
+.lp .sv-insight { margin-top: auto; padding: 14px 16px; border-radius: 14px; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.15); display: flex; flex-direction: column; gap: 8px; font-size: 13px; }
+.lp .sv-insight .row { display: grid; grid-template-columns: 38% 1fr; gap: 10px; align-items: center; } .lp .sv-insight .row > div { height: 8px; border-radius: 4px; background: rgba(255,255,255,.12); overflow: hidden; }
+.lp .sv-insight i { display: block; height: 100%; width: var(--w); background: #ECCFFA; border-radius: 4px; transform-origin: left; animation: svBar var(--t) cubic-bezier(.22,.8,.25,1) infinite; animation-delay: calc(4s + var(--k) * .25s); }
+@keyframes svBub { 0% { opacity: 0; transform: translateY(12px) } 6%, 78% { opacity: 1; transform: none } 90%, 100% { opacity: 0; transform: translateY(-6px) } }
+@keyframes svBar { 0%, 2% { transform: scaleX(0) } 20%, 74% { transform: scaleX(1) } 88%, 100% { transform: scaleX(0) } }
+@media (prefers-reduced-motion: reduce) { .lp .sv *, .lp .sv { animation: none !important; } .lp .sv-typed { width: 40ch; } .lp .sv-card, .lp .sv-bub { opacity: 1; } .lp .sv-node { opacity: 1; } }

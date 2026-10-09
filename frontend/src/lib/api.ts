@@ -65,6 +65,13 @@ export const api = {
   response: (formId: number, rid: number) => req<FormResponse>(`/forms/${formId}/responses/${rid}`),
   deleteResponse: (formId: number, rid: number) => req<void>(`/forms/${formId}/responses/${rid}`, json('DELETE')),
   summary: (formId: number) => req<Summary>(`/forms/${formId}/summary`),
+  downloadFile: async (formId: number, fileId: number, name: string) => {
+    const res = await fetch(`${API_URL}/api/forms/${formId}/files/${fileId}`, { headers: authHeader() });
+    if (!res.ok) throw new ApiError('Could not download the file', res.status);
+    const url = URL.createObjectURL(await res.blob());
+    const a = Object.assign(document.createElement('a'), { href: url, download: name });
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 1000);
+  },
   csvUrl: (formId: number) => `${API_URL}/api/forms/${formId}/responses/export.csv`,
 
   publicForm: (slug: string) => req<Form>(`/public/forms/${slug}`),

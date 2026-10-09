@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
@@ -17,6 +17,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           rel="stylesheet"
           href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Karla:wght@400;500;700&family=Playfair+Display:wght@400;600&family=Space+Grotesk:wght@400;500;700&display=swap"
         />
+        <script dangerouslySetInnerHTML={{ __html: "try{var m=localStorage.getItem('tf_mode');if(!m&&matchMedia('(prefers-color-scheme: dark)').matches)m='dark';if(m==='dark')document.documentElement.dataset.theme='dark'}catch(e){}" }} />
       </head>
       <body>
         <ToastProvider>{children}</ToastProvider>

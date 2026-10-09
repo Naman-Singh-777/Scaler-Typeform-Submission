@@ -66,3 +66,29 @@ def test_site_and_auth():
         # a new account starts with its own empty workspace; anonymous requests still see the demo creator's forms
         assert c.get("/api/forms", headers=h).json() == []
         assert len(c.get("/api/forms").json()) >= 3
+
+
+def test_file_upload_question():
+    import base64
+    with TestClient(app) as c:
+        f = c.post("/api/forms", json={"title": "Files"}).json()
+        fid, slug, q0 = f["id"], f["slug"], f["questions"][0]["id"]
+        q = c.post(f"/api/forms/{fid}/questions", json={"type": "file_upload"}).json()["id"]
+        c.patch(f"/api/questions/{q0}", json={"title": "Name"})
+        c.patch(f"/api/questions/{q}", json={"title": "Your CV", "required": True})
+        assert c.post(f"/api/forms/{fid}/publish").status_code == 200
+        rid = c.post(f"/api/public/forms/{slug}/responses").json()["id"]
+        url = f"/api/public/forms/{slug}/responses/{rid}/submit"
+        assert c.post(url, json={"answers": {q0: "A"}}).status_code == 422  # required file missing
+        big = base64.b64encode(b"x" * (5 * 1024 * 1024 + 1)).decode()
+        assert c.post(url, json={"answers": {q0: "A", q: {"name": "big.bin", "data": big}}}).status_code == 422
+        data = base64.b64encode(b"hello file").decode()
+        ok = c.post(url, json={"answers": {q0: "A", q: {"name": "cv.txt", "type": "text/plain", "data": data}}})
+        assert ok.status_code == 201
+        resp = c.get(f"/api/forms/{fid}/responses/{rid}").json()
+        ref = resp["answers"][str(q)]
+        assert ref["name"] == "cv.txt" and ref["size"] == 10 and "data" not in ref
+        dl = c.get(f"/api/forms/{fid}/files/{ref['file_id']}")
+        assert dl.status_code == 200 and dl.content == b"hello file" and "attachment" in dl.headers["content-disposition"]
+        assert "cv.txt" in c.get(f"/api/forms/{fid}/responses/export.csv").text
+        assert c.get(f"/api/forms/{fid}/summary").json()["questions"][1]["latest"] == ["cv.txt"]

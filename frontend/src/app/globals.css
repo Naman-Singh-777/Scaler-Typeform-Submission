@@ -603,3 +603,43 @@ body{font-family:system-ui,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:va
 @keyframes admIn{from{opacity:0}}
 @media(max-width:700px){.wl__mark{height:70px;transform:scale(.8)}.wl__txt{font-size:20px;line-height:26px}}
 @media(prefers-reduced-motion:reduce){.wl.go .wl__mark i,.wl.go .wl__mark,.wl.go .wl__txt{animation-duration:.01s!important}}
+
+/* ---- file upload question ---- */
+.tf-file{display:flex;align-items:center;gap:14px;width:100%;max-width:560px;border:1.5px dashed rgba(var(--ans-rgb),.55);border-radius:8px;background:rgba(var(--ans-rgb),.06);color:var(--ans);padding:22px;font:inherit;font-size:18px;text-align:left;cursor:pointer;transition:background .15s,border-color .15s}
+.tf-file.drop{flex-direction:column;justify-content:center;gap:6px;min-height:150px;text-align:center}
+.tf-file.drop:hover,.tf-file.over{background:rgba(var(--ans-rgb),.14);border-color:var(--ans)}
+.tf-file small{opacity:.7;font-size:14px}
+.tf-file.has{border-style:solid;cursor:default;padding:14px 18px}
+.tf-file .nm{display:flex;flex-direction:column;flex:1;min-width:0}.tf-file .nm b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.tf-file .nm span{opacity:.7;font-size:14px}
+.tf-file .rm{border:1px solid rgba(var(--ans-rgb),.55);background:transparent;color:var(--ans);border-radius:4px;padding:6px 12px;font:inherit;font-size:15px;cursor:pointer}
+.tf-file-err{color:#c62828;font-size:15px;margin-top:8px}
+
+/* ---- dark mode (creator UI). Respondent forms keep their own form theme. ---- */
+html[data-theme=dark]{color-scheme:dark;--pane:#1f1b21;--ink:#ece8ee;--muted:#a79fa9;--line:#3a343c;--soft:#2b262d;--soft2:#241f26;--hair:rgba(255,255,255,.14)}
+html[data-theme=dark] body,html[data-theme=dark] .adm,html[data-theme=dark] .bd,html[data-theme=dark] .fh,html[data-theme=dark] .topbar,html[data-theme=dark] .wl{background:#161317;color:var(--ink)}
+html[data-theme=dark] .bd-left,html[data-theme=dark] .bd-right,html[data-theme=dark] .modal,html[data-theme=dark] .menu,html[data-theme=dark] .user-menu,html[data-theme=dark] .card,html[data-theme=dark] .drawer,html[data-theme=dark] .type-btn,html[data-theme=dark] .theme-card,html[data-theme=dark] .seg button,html[data-theme=dark] .cn-card,html[data-theme=dark] .cn-tabs,html[data-theme=dark] .cn-search,html[data-theme=dark] .ac-body,html[data-theme=dark] .askai__in,html[data-theme=dark] .bd-logicbar.on,html[data-theme=dark] .adm-row,html[data-theme=dark] .qrow.sel,html[data-theme=dark] .qsection.sel,html[data-theme=dark] .qrow.dragging,html[data-theme=dark] .qrow .qn,html[data-theme=dark] .plus-btn:hover:not(:disabled),html[data-theme=dark] .adm-ibtn:hover,html[data-theme=dark] .adm-usage__btn:hover{background:#1f1b21;color:var(--ink)}
+html[data-theme=dark] .cn{background:#121013}
+html[data-theme=dark] .field,html[data-theme=dark] .linkbar input,html[data-theme=dark] .ac-search,html[data-theme=dark] .fh-title:focus,html[data-theme=dark] .color-row input[type=color]{background:#241f26;color:var(--ink);border-color:var(--line)}
+html[data-theme=dark] .btn{background:#241f26;color:var(--ink);border-color:var(--line)}
+html[data-theme=dark] .btn.primary{background:#ece8ee;color:#161317;border-color:#ece8ee}
+html[data-theme=dark] .tbl td,html[data-theme=dark] .tbl th{border-color:var(--line)}
+html[data-theme=dark] .fh-crumb,html[data-theme=dark] .fh-tabs a,html[data-theme=dark] .fh-tabs button,html[data-theme=dark] .adm-ws,html[data-theme=dark] .adm-link,html[data-theme=dark] .tb-btn,html[data-theme=dark] .tb-ico{color:var(--muted)}
+html[data-theme=dark] .adm-logo i{background:#ece8ee}
+html[data-theme=dark] .adm-tabs button.on,html[data-theme=dark] .adm-seg button.on,html[data-theme=dark] .tabs button.on{color:var(--ink)}
+html[data-theme=dark] .bd-canvas,html[data-theme=dark] .bd-center{background:transparent}
+html[data-theme=dark] .adm-tip,html[data-theme=dark] .adm-promo{background:#2b262d;color:var(--ink)}
+html[data-theme=dark] .adm-tip>div,html[data-theme=dark] .fh-tabs a.on,html[data-theme=dark] .ac-tabs button.on,html[data-theme=dark] .adm-seg button.on{color:var(--ink)}
+html[data-theme=dark] .adm-row.head{background:#2b262d}
+html[data-theme=dark] .adm-row:not(.head){background:#241f26}
+html[data-theme=dark] .qrow.sel{background:#2b262d}
+html[data-theme=dark] .bd-pane,html[data-theme=dark] .bd-mode,html[data-theme=dark] .bd-toolbar,html[data-theme=dark] .askai,html[data-theme=dark] .adm-tabs,html[data-theme=dark] .adm-side,html[data-theme=dark] .adm-main,html[data-theme=dark] .ac-dialog{background:#1f1b21}
+html[data-theme=dark] .askai__in{background:#2b262d}
+html[data-theme=dark] .qrow,html[data-theme=dark] .qsection{background:transparent;color:var(--muted)}
+html[data-theme=dark] .qrow:hover,html[data-theme=dark] .qsection:hover{background:var(--soft)}
+html[data-theme=dark] .qrow.sel,html[data-theme=dark] .qsection.sel{background:#2b262d;color:var(--ink);border-color:var(--line)}
+html[data-theme=dark] .qrow .qn{background:#3a343c}
+html[data-theme=dark] .bd-pane-h,html[data-theme=dark] .adm-main h1,html[data-theme=dark] .adm-main h2,html[data-theme=dark] h1,html[data-theme=dark] h2,html[data-theme=dark] h3{color:var(--ink)}
+html[data-theme=dark] .plus-btn,html[data-theme=dark] .adm-seg button,html[data-theme=dark] .adm-ibtn{background:#2b262d;color:var(--ink);border-color:var(--line)}
+html[data-theme=dark] .adm-seg button.on{background:#3a343c}
+html[data-theme=dark] .adm-create{background:#ece8ee;color:#161317}
+html[data-theme=dark] .qsection .qicon{background:#3a343c}

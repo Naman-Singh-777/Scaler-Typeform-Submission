@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from ..database import get_db
 from ..logic import compute_path, validate_answer
-from ..models import Answer, Form, Response, utcnow
+from ..models import Answer, FileUpload, Form, Response, utcnow
 from ..schemas import AnswersIn, FormOut
 
 router = APIRouter(prefix="/api/public", tags=["public"])
@@ -55,7 +55,14 @@ def submit_response(slug: str, response_id: int, body: AnswersIn, db: Session = 
     if errors:
         raise HTTPException(422, detail={"message": "Some answers need your attention", "errors": errors})
 
+    types = {q.id: q.type for q in form.questions}
     for qid, value in clean.items():
+        if types.get(qid) == "file_upload":  # keep the bytes in file_uploads, the answer holds a small reference
+            up = FileUpload(response_id=resp.id, question_id=qid, filename=value["name"], content_type=value["type"],
+                            size=len(value["raw"]), data=value["raw"])
+            db.add(up)
+            db.flush()
+            value = {"file_id": up.id, "name": up.filename, "size": up.size, "type": up.content_type}
         resp.answers.append(Answer(question_id=qid, value=value))
     resp.status, resp.submitted_at = "completed", utcnow()
     db.commit()

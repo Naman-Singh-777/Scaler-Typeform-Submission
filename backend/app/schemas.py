@@ -7,7 +7,7 @@ from pydantic import BaseModel, ConfigDict, Field, PlainSerializer
 UTCDatetime = Annotated[datetime, PlainSerializer(lambda d: d.isoformat() + "Z", return_type=str)]
 
 QuestionType = Literal[
-    "short_text", "long_text", "multiple_choice", "dropdown", "email", "number", "yes_no", "rating"
+    "short_text", "long_text", "multiple_choice", "dropdown", "email", "number", "yes_no", "rating", "file_upload"
 ]
 RuleOp = Literal["equals", "not_equals", "contains", "greater_than", "less_than"]
 

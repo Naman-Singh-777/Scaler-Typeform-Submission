@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import Icon from '../Icon';
+import { MAX_UPLOAD } from '@/lib/logic';
 import type { Question } from '@/lib/types';
 
 export const letter = (i: number) => String.fromCharCode(65 + i);
@@ -102,6 +103,48 @@ function Rating({ q, value, onChange }: Props) {
   );
 }
 
+const toBase64 = (f: File) => new Promise<string>((res, rej) => {
+  const r = new FileReader();
+  r.onload = () => res(String(r.result).split(',')[1] || '');
+  r.onerror = () => rej(r.error);
+  r.readAsDataURL(f);
+});
+const fmtSize = (n: number) => (n < 1024 ? `${n} B` : n < 1048576 ? `${(n / 1024).toFixed(1)} KB` : `${(n / 1048576).toFixed(1)} MB`);
+
+function FileUpload({ value, onChange, q }: Props) {
+  const input = useRef<HTMLInputElement>(null);
+  const [drag, setDrag] = useState(false);
+  const [err, setErr] = useState('');
+  const take = async (f?: File) => {
+    if (!f) return;
+    if (f.size > MAX_UPLOAD) { setErr('Files must be 5 MB or smaller'); return; }
+    setErr('');
+    try { onChange({ name: f.name, type: f.type || 'application/octet-stream', size: f.size, data: await toBase64(f) }); }
+    catch { setErr('That file could not be read'); }
+  };
+  return (
+    <div>
+      <input ref={input} type="file" hidden aria-label={q.title} onChange={(e) => { take(e.target.files?.[0]); e.target.value = ''; }} />
+      {value ? (
+        <div className="tf-file has">
+          <Icon name="upload" size={20} stroke={1.6} />
+          <div className="nm"><b>{value.name}</b><span>{fmtSize(value.size)}</span></div>
+          <button type="button" className="rm" onClick={() => onChange(undefined)}>Remove</button>
+        </div>
+      ) : (
+        <button type="button" className={`tf-file drop ${drag ? 'over' : ''}`} onClick={() => input.current?.click()}
+          onDragOver={(e) => { e.preventDefault(); setDrag(true); }} onDragLeave={() => setDrag(false)}
+          onDrop={(e) => { e.preventDefault(); setDrag(false); take(e.dataTransfer.files?.[0]); }}>
+          <Icon name="upload" size={28} stroke={1.5} />
+          <span><b>Choose file</b> or drag and drop here</span>
+          <small>Up to 5 MB</small>
+        </button>
+      )}
+      {err && <p className="tf-file-err">{err}</p>}
+    </div>
+  );
+}
+
 export default function QuestionInput(p: Props) {
   const { q, value, onChange } = p;
   switch (q.type) {
@@ -109,6 +152,7 @@ export default function QuestionInput(p: Props) {
     case 'long_text': return <LongText {...p} />;
     case 'dropdown': return <Dropdown {...p} />;
     case 'rating': return <Rating {...p} />;
+    case 'file_upload': return <FileUpload {...p} />;
     case 'yes_no':
       return (
         <div className="tf-choices">

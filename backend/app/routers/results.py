@@ -4,13 +4,13 @@ import io
 from collections import Counter
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from fastapi.responses import StreamingResponse
+from fastapi.responses import Response as HttpResponse, StreamingResponse
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session, selectinload
 
 from ..database import get_db
 from ..deps import get_owned_form
-from ..models import Answer, Form, Response
+from ..models import Answer, FileUpload, Form, Response
 from ..schemas import ResponseOut, ResponsePage
 
 router = APIRouter(prefix="/api/forms/{form_id}", tags=["results"])
@@ -52,6 +52,8 @@ def export_csv(form: Form = Depends(get_owned_form), db: Session = Depends(get_d
             return ""
         if isinstance(v, bool):
             return "Yes" if v else "No"
+        if isinstance(v, dict):
+            return v.get("name", "file")
         s = "; ".join(map(str, v)) if isinstance(v, list) else str(v)
         return "'" + s if s[:1] in ("=", "+", "-", "@") else s  # neutralise CSV/formula injection
 
@@ -72,6 +74,17 @@ def get_response(response_id: int, form: Form = Depends(get_owned_form), db: Ses
     if not r:
         raise HTTPException(404, "Response not found")
     return _out(r)
+
+
+@router.get("/files/{file_id}")
+def download_file(file_id: int, form: Form = Depends(get_owned_form), db: Session = Depends(get_db)):
+    up = db.scalar(select(FileUpload).join(Response, FileUpload.response_id == Response.id)
+                   .where(FileUpload.id == file_id, Response.form_id == form.id))
+    if not up:
+        raise HTTPException(404, "File not found")
+    safe = "".join(c if c.isalnum() or c in ".-_ " else "_" for c in up.filename) or "file"
+    return HttpResponse(up.data, media_type="application/octet-stream",  # octet-stream + attachment: never rendered in the app origin
+                        headers={"Content-Disposition": f'attachment; filename="{safe}"', "X-Content-Type-Options": "nosniff"})
 
 
 @router.delete("/responses/{response_id}", status_code=204)
@@ -116,6 +129,8 @@ def summary(form: Form = Depends(get_owned_form), db: Session = Depends(get_db))
         elif q.type == "number":
             item.update(average=round(sum(vals) / len(vals), 2) if vals else None,
                         min=min(vals) if vals else None, max=max(vals) if vals else None)
+        elif q.type == "file_upload":
+            item["latest"] = [str(v.get("name", "file")) for v in vals[-5:] if isinstance(v, dict)][::-1]
         else:
             item["latest"] = [str(v) for v in vals[-5:]][::-1]
         questions.append(item)

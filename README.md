@@ -37,7 +37,7 @@ On first start the DB is seeded with a default creator and three forms (two publ
 | Landing page | Pixel-matched recreation of typeform.com: nav whose wordmark **slides into the logo mark** after 500 px of scroll (hover reveals it), mega-menu dropdowns, hero with split-word headline and three tab cards whose progress bars follow the hero videos (auto-advance on `ended`), scroll-parallax purple arc, text/media sections with staggered reveals, customer logo marquee, expanding testimonial slider, integrations marquee with brand-colour hover, looping star-field CTA video, footer with newsletter, cookie banner, "Ask Ty" chat chip, **Contact sales** modal (stored via API). Responsive down to mobile with a hamburger menu. |
 | Accounts | Sign up / log in pages (sign-up plays the "Setting you up…" loader animation before the workspace); the dashboard avatar menu shows the user and logs out. Each account has its own empty workspace. |
 | Typeform feel | Toasts, modals, inline editing, themes, placeholders ("Coming soon") for Connect/integrations, team sharing, payment & file upload, advanced logic. |
-| Bonus | **Basic logic jumps** (if answer … then jump to question / end form — evaluated on client *and* server), **custom themes** (6 presets, font, 5 colours), **CSV export**, **partial-response tracking / completion rate**. |
+| Bonus | **Basic logic jumps** (if answer … then jump to question / end form — evaluated on client *and* server), **custom themes** (6 presets, font, 5 colours), **CSV export**, **file-upload question** (5 MB, stored in the DB, creator downloads from the response drawer), **dark mode** (account menu, remembered per browser), **partial-response tracking / completion rate**. |
 
 ## Architecture
 
@@ -111,6 +111,7 @@ Creator (prefix `/api`)
 | GET/DELETE | `/forms/{id}/responses/{rid}` | one response / delete |
 | GET | `/forms/{id}/summary` | stats + per-question aggregates |
 | GET | `/forms/{id}/responses/export.csv` | CSV export (formula-injection safe) |
+| GET | `/forms/{id}/files/{file_id}` | Download an uploaded file (creator only, always as an attachment) |
 
 Public (no auth)
 | Method | Path | Purpose |
@@ -132,7 +133,8 @@ Public (no auth)
 - **Fonts:** Typeform's licensed faces (TWK Lausanne, Tobias) are substituted with the free Hanken Grotesk and Newsreader (self-hosted via `@fontsource`); the builder uses Inter/Karla/Space Grotesk/Playfair from Google Fonts.
 - **Marketing assets:** the landing page reuses Typeform's public marketing media (hero/CTA videos, section posters, icons, integration and customer logos in `frontend/public/landing`) purely to reproduce the reference design for this exercise. The customer-logo marquee uses made-up placeholder names. Replace the files in that folder to rebrand. All code is original.
 - The three hero videos and CTA video are muted, looping/auto-advancing and pause when off screen.
-- Connect/integrations, team sharing, payment and file-upload are "Coming soon" placeholders as allowed.
+- Connect/integrations, team sharing and payment are "Coming soon" placeholders as allowed. File upload is real (bonus): the file travels base64 inside the submit request, is capped at 5 MB, and is stored in the `file_uploads` table.
+- Dark mode covers the creator UI (dashboard, builder, results). Respondent forms keep their own form theme.
 
 ## Original work
 

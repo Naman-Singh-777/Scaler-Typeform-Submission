@@ -11,6 +11,7 @@ export const fmtDate = (iso?: string | null) =>
 export function fmtAnswer(v: any): string {
   if (v === undefined || v === null || v === '') return '—';
   if (typeof v === 'boolean') return v ? 'Yes' : 'No';
+  if (typeof v === 'object' && !Array.isArray(v)) return v.name ?? 'file';
   return Array.isArray(v) ? v.join(', ') : String(v);
 }
 export const fmtDuration = (s: number | null) => (s == null ? '—' : s < 60 ? `${s}s` : `${Math.floor(s / 60)}m ${s % 60}s`);

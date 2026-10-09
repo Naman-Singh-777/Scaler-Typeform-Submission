@@ -44,6 +44,7 @@ function Drawer({ form, items, index, onClose, onNav, onDelete }: {
   form: Form; items: FormResponse[]; index: number; onClose: () => void; onNav: (i: number) => void; onDelete: (r: FormResponse) => void;
 }) {
   const r = items[index];
+  const toast = useToast();
   useEffect(() => {
     const h = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
     window.addEventListener('keydown', h);
@@ -63,7 +64,7 @@ function Drawer({ form, items, index, onClose, onNav, onDelete }: {
         <div className="drawer-body">
           {form.questions.map((q, i) => {
             const a = r.answers[String(q.id)];
-            return (<div key={q.id}><div className="ans-q">{i + 1}. {q.title || 'Untitled question'}</div><div className={`ans-a ${a === undefined ? 'none' : ''}`}>{fmtAnswer(a)}</div></div>);
+            return (<div key={q.id}><div className="ans-q">{i + 1}. {q.title || 'Untitled question'}</div><div className={`ans-a ${a === undefined ? 'none' : ''}`}>{a && typeof a === 'object' && a.file_id ? <button className="btn sm" onClick={() => api.downloadFile(form.id, a.file_id, a.name).catch((e) => toast(e.message, 'error'))}><Icon name="download" size={14} />{a.name} · {Math.max(1, Math.round(a.size / 1024))} KB</button> : fmtAnswer(a)}</div></div>);
           })}
         </div>
       </aside>

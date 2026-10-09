@@ -1,6 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
+import SectionVisual from './SectionVisual';
 import { FEATURES, Feature, Integration, Story } from '@/lib/landingContent';
 import { Words } from './useReveal';
 
@@ -9,8 +10,8 @@ function Icon({ name }: { name: string }) {
   return <span className="ficon" style={{ WebkitMaskImage: url, maskImage: url }} aria-hidden />;
 }
 
-function TextMedia({ theme, flip, eyebrow, isNew, title, body, cta, img, features, ctaHref }: {
-  theme: 'light' | 'dark'; flip?: boolean; eyebrow: string; isNew?: boolean; title: string; body: string; cta: string; img: string; features: Feature[]; ctaHref: string;
+function TextMedia({ theme, flip, eyebrow, isNew, title, body, cta, visual, features, ctaHref }: {
+  theme: 'light' | 'dark'; flip?: boolean; eyebrow: string; isNew?: boolean; title: string; body: string; cta: string; visual: 'forms' | 'growth' | 'research'; features: Feature[]; ctaHref: string;
 }) {
   return (
     <section className={`tm tm--${theme}`} data-nav={theme === 'light' ? 'light' : 'dark'}>
@@ -23,7 +24,7 @@ function TextMedia({ theme, flip, eyebrow, isNew, title, body, cta, img, feature
             <Link href={ctaHref} className="btn-solid rv">{cta}</Link>
           </div>
           <div className="tm__media rv">
-            <img src={img} alt="" loading="lazy" />
+            <SectionVisual kind={visual} />
           </div>
         </div>
         <div className="tm__feats">
@@ -70,7 +71,7 @@ export function ProductSections({ authed }: { authed: boolean }) {
     <>
       <TextMedia theme="light" eyebrow="INTELLIGENT FORMS" title={'Build forms at the drop\nof a prompt'}
         body="With over 48 million responses collected monthly, Typeform AI builds best-in-class forms proven to get 3.5x more data. Brand easily, customize everything."
-        cta="Explore forms" img="/landing/intelligent.avif" features={FEATURES.forms} ctaHref={go} />
+        cta="Explore forms" visual="forms" features={FEATURES.forms} ctaHref={go} />
 
       <section className="shead" data-nav="dark">
         <h2 className="h-64 rv-words"><Words text={'When the form ends,\nthe flow begins...'} step={0.07} /></h2>
@@ -78,13 +79,13 @@ export function ProductSections({ authed }: { authed: boolean }) {
 
       <TextMedia theme="dark" flip eyebrow="GROWTH FLOW" isNew title={'Be proactive with\ncustomer data'}
         body="Set up automations that convert and keep customers for you. As opportunities arise, Growth Flow steps in to enrich leads, create segments, and send personalized messages."
-        cta="Explore Growth Flow" img="/landing/growth.avif" features={FEATURES.growth} ctaHref={go} />
+        cta="Explore Growth Flow" visual="growth" features={FEATURES.growth} ctaHref={go} />
 
       <div className="shine" aria-hidden />
 
       <TextMedia theme="dark" eyebrow="RESEARCH FLOW" isNew title={'Run fast research,\nmoderated by AI'}
         body="Make data-backed business decisions with Research Flow. It builds your research study, conducts 1000s of AI-moderated interviews at once, and analyzes the findings. Fast."
-        cta="Explore Research Flow" img="/landing/research.avif" features={FEATURES.research} ctaHref={go} />
+        cta="Explore Research Flow" visual="research" features={FEATURES.research} ctaHref={go} />
     </>
   );
 }
@@ -169,7 +170,7 @@ export function Integrations({ items }: { items: Integration[] }) {
 export function Cta({ authed }: { authed: boolean }) {
   return (
     <section className="cta" data-nav="dark">
-      <video autoPlay muted loop playsInline preload="metadata">
+      <video autoPlay muted loop playsInline preload="auto" ref={(v) => { if (v) { v.muted = true; v.play().catch(() => {}); } }}>
         <source src="/landing/star-bg.webm" type="video/webm" />
         <source src="/landing/star-bg.mp4" type="video/mp4" />
       </video>

@@ -1,4 +1,6 @@
 """Answer validation + branching logic (mirrors frontend/src/lib/logic.ts)."""
+import base64
+import binascii
 import re
 from typing import Any
 
@@ -15,7 +17,9 @@ DEFAULT_SETTINGS: dict[str, dict[str, Any]] = {
     "dropdown": {"placeholder": "Type or select an option"},
     "rating": {"steps": 5},
     "yes_no": {},
+    "file_upload": {},
 }
+MAX_UPLOAD_BYTES = 5 * 1024 * 1024  # 5 MB per file
 
 
 def clean_settings(qtype: str, raw: dict[str, Any] | None) -> dict[str, Any]:
@@ -91,6 +95,22 @@ def validate_answer(q: Question, value: Any) -> tuple[Any, str | None]:
         if not isinstance(value, str) or value not in labels:
             return None, "Please choose from the options"
         return value, None
+    if t == "file_upload":
+        # the respondent sends {name, type, data(base64)}; submit stores the bytes and replaces it by a file reference
+        if not isinstance(value, dict):
+            return None, "Please choose a file"
+        if "file_id" in value:
+            return value, None
+        name = str(value.get("name") or "file")[:255]
+        try:
+            raw = base64.b64decode(str(value.get("data") or ""), validate=True)
+        except (binascii.Error, ValueError):
+            return None, "That file could not be read"
+        if not raw:
+            return None, "That file is empty"
+        if len(raw) > MAX_UPLOAD_BYTES:
+            return None, "Files must be 5 MB or smaller"
+        return {"name": name, "type": str(value.get("type") or "application/octet-stream")[:100], "raw": raw}, None
     return None, "Unsupported question type"
 
 

@@ -44,6 +44,8 @@ function AnswerPreview({ q, b }: { q: Question; b: Builder }) {
     case 'short_text': case 'email': case 'number':
       return <input className="tf-input cv-fake" readOnly tabIndex={-1} placeholder={q.settings.placeholder} />;
     case 'long_text': return <textarea className="tf-input tf-textarea cv-fake" readOnly tabIndex={-1} rows={1} placeholder={q.settings.placeholder} />;
+    case 'file_upload':
+      return <div className="tf-file drop cv-fake"><Icon name="upload" size={28} stroke={1.5} /><span><b>Choose file</b> or drag and drop here</span><small>Up to 5 MB</small></div>;
     case 'yes_no':
       return <div className="tf-choices cv-fake"><div className="tf-choice"><span className="key">Y</span>Yes</div><div className="tf-choice"><span className="key">N</span>No</div></div>;
     case 'rating':

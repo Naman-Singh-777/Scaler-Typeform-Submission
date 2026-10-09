@@ -6,7 +6,7 @@ users 1─* forms 1─* questions 1─* choices
 """
 from datetime import datetime, timezone
 
-from sqlalchemy import JSON, Boolean, DateTime, ForeignKey, Index, Integer, String, Text, UniqueConstraint
+from sqlalchemy import JSON, Boolean, DateTime, ForeignKey, Index, Integer, LargeBinary, String, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .database import Base
@@ -161,3 +161,16 @@ class Answer(Base):
     question_id: Mapped[int] = mapped_column(ForeignKey("questions.id", ondelete="CASCADE"))
     value: Mapped[object] = mapped_column(JSON)  # str | number | bool | list[str]
     response: Mapped[Response] = relationship(back_populates="answers")
+
+
+class FileUpload(Base):
+    """A file attached to a file_upload answer. Bytes live in the DB so no extra storage service is needed."""
+    __tablename__ = "file_uploads"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    response_id: Mapped[int] = mapped_column(ForeignKey("responses.id", ondelete="CASCADE"), index=True)
+    question_id: Mapped[int] = mapped_column(ForeignKey("questions.id", ondelete="CASCADE"))
+    filename: Mapped[str] = mapped_column(String(255))
+    content_type: Mapped[str] = mapped_column(String(100), default="application/octet-stream")
+    size: Mapped[int] = mapped_column(Integer)
+    data: Mapped[bytes] = mapped_column(LargeBinary)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)

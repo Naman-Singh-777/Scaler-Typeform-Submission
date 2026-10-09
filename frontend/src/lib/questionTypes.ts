@@ -12,6 +12,7 @@ export const QUESTION_TYPES: { type: QType; label: string; color: string; icon: 
   { type: 'email', label: 'Email', color: PINK, icon: 'email', group: 'Contact info' },
   { type: 'number', label: 'Number', color: ORANGE, icon: 'number', group: 'Other' },
   { type: 'rating', label: 'Rating', color: GREEN, icon: 'star', group: 'Rating & ranking' },
+  { type: 'file_upload', label: 'File upload', color: GREY, icon: 'upload', group: 'Other' },
 ];
 export const TYPE_META = Object.fromEntries(QUESTION_TYPES.map((t) => [t.type, t])) as Record<QType, (typeof QUESTION_TYPES)[number]>;
 
@@ -29,6 +30,5 @@ export const COMING_SOON_TYPES = [
   { label: 'Ranking', icon: 'ranking', color: GREEN, group: 'Rating & ranking' },
   { label: 'Matrix', icon: 'matrix', color: GREEN, group: 'Rating & ranking' },
   { label: 'Video and Audio', icon: 'video', color: BLUE, group: 'Text & Video' },
-  { label: 'File upload', icon: 'upload', color: GREY, group: 'Other' },
   { label: 'Payment', icon: 'card', color: GREY, group: 'Other' },
 ];
