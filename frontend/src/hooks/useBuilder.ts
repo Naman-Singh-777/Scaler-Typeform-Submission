@@ -113,6 +113,7 @@ export function useBuilder(formId: number) {
     catch (e: any) { toast(e.message, 'error'); }
   }, [formId, toast]);
 
-  return { form, loadError, status, putQuestion, updateForm, updateQuestion, changeType, addQuestion, deleteQuestion, duplicateQuestion, reorder, publish, unpublish, flushAll };
+  const replaceForm = useCallback((f: Form) => setForm(f), []);
+  return { form, replaceForm, loadError, status, putQuestion, updateForm, updateQuestion, changeType, addQuestion, deleteQuestion, duplicateQuestion, reorder, publish, unpublish, flushAll };
 }
 export type Builder = ReturnType<typeof useBuilder>;

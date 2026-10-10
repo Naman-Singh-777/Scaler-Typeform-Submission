@@ -93,6 +93,15 @@ class Form(Base):
     )
 
 
+class FormVersion(Base):
+    """A snapshot of a form taken each time it is published (Version History in the builder)."""
+    __tablename__ = "form_versions"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    form_id: Mapped[int] = mapped_column(ForeignKey("forms.id", ondelete="CASCADE"), index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+    snapshot: Mapped[dict] = mapped_column(JSON, default=dict)
+
+
 class Question(Base):
     __tablename__ = "questions"
     id: Mapped[int] = mapped_column(primary_key=True)

@@ -20,8 +20,13 @@ const GROUPS: { title: string; labels: string[] }[] = [
   { title: 'Other', labels: ['Number', 'File upload', 'Payment'] },
 ];
 
-export default function AddContentModal({ onPick, onClose }: { onPick: (t: QType) => void; onClose: () => void }) {
+export default function AddContentModal({ onPick, onClose, onImport, onAI }: { onPick: (t: QType) => void; onClose: () => void; onImport: (lines: string[]) => Promise<void> | void; onAI: (prompt: string) => void }) {
   const [q, setQ] = useState('');
+  const [tab, setTab] = useState<'elements' | 'import' | 'ai'>('elements');
+  const [text, setText] = useState('');
+  const [prompt, setPrompt] = useState('');
+  const [busy, setBusy] = useState(false);
+  const lines = text.split('\n').map((l) => l.trim()).filter(Boolean);
   const toast = useToast();
   const soon = (what: string) => toast(`${what} is coming soon`, 'info');
   useEffect(() => {
@@ -48,12 +53,42 @@ export default function AddContentModal({ onPick, onClose }: { onPick: (t: QType
     <div className="ac-overlay" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
       <div className="ac-dialog" role="dialog" aria-modal="true" aria-label="Add content">
         <div className="ac-tabs">
-          <button className="on">Add form elements</button>
-          <button onClick={() => soon('Importing questions')}>Import questions</button>
-          <button onClick={() => soon('Creating with AI')}>Create with AI</button>
+          <button className={tab === 'elements' ? 'on' : ''} onClick={() => setTab('elements')}>Add form elements</button>
+          <button className={tab === 'import' ? 'on' : ''} onClick={() => setTab('import')}>Import questions</button>
+          <button className={tab === 'ai' ? 'on' : ''} onClick={() => setTab('ai')}>Create with AI</button>
           <button className="ac-close" onClick={onClose} aria-label="Close"><Icon name="x" size={20} stroke={1.6} /></button>
         </div>
-        <div className="ac-body">
+        {tab === 'import' && (
+          <div className="ac-import">
+            <label>Form questions
+              <textarea autoFocus value={text} onChange={(e) => setText(e.target.value)} placeholder="Copy and paste or type in your questions, and press enter after each one." />
+            </label>
+            <aside>
+              <div className="ac-tip"><Icon name="info" size={16} stroke={1.6} />
+                <ul><li>Paste or type your questions in the text field</li><li>Or try Create with AI to build your form from a description, file upload, or URL</li></ul></div>
+              <button className="btn" onClick={() => setTab('ai')}>Create with AI</button>
+              <button className="btn primary" disabled={!lines.length || busy} onClick={async () => { setBusy(true); await onImport(lines); }}>{busy ? 'Adding…' : `Add ${lines.length || ''} question${lines.length === 1 ? '' : 's'}`}</button>
+            </aside>
+          </div>
+        )}
+        {tab === 'ai' && (
+          <div className="ac-ai">
+            <div className="ac-aih"><small>Typeform AI</small><h3>What would you like to create?</h3></div>
+            <div className="ac-aib">
+              <div className="ac-aibox">
+                <textarea autoFocus rows={3} value={prompt} onChange={(e) => setPrompt(e.target.value)} placeholder="Create and edit (almost) anything in your form."
+                  onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey && prompt.trim()) { e.preventDefault(); onAI(prompt.trim()); } }} />
+                <div><span className="grow" /><button className="ais__send" aria-label="Send" disabled={!prompt.trim()} onClick={() => onAI(prompt.trim())}><Icon name="play" size={14} stroke={1.6} /></button></div>
+              </div>
+              {[['Lead qualification form', 'Qualify your leads with AI-generated questions and scoring rules.', 'Create a lead qualification form with questions that score and qualify leads', 'gauge', ''],
+                ['Product recommendation quiz', 'Boost sales by recommending products with AI-generated questions and matching rules.', 'Create a product recommendation quiz that helps customers find the right product', 'scale', 'Match quiz'],
+                ['Personality quiz', 'Show different results based on answers with AI-generated questions and matching rules.', 'Create a fun personality quiz with questions that reveal different results', 'choice', 'Match quiz']].map(([t, d, p, ic, tag]) => (
+                <button key={t} className="ac-card" onClick={() => onAI(p)}><span className="ac-cardi"><Icon name={ic} size={20} stroke={1.5} /></span><span><b>{t}{tag && <em>{tag}</em>}</b><small>{d}</small></span></button>
+              ))}
+            </div>
+          </div>
+        )}
+        {tab === 'elements' && <div className="ac-body">
           <div className="ac-side">
             <label className="ac-search"><Icon name="search" size={16} stroke={1.7} /><input autoFocus placeholder="Search form elements" value={q} onChange={(e) => setQ(e.target.value)} aria-label="Search form elements" /></label>
             {!q && (
@@ -82,7 +117,7 @@ export default function AddContentModal({ onPick, onClose }: { onPick: (t: QType
             })}
             {q && !anyMatch && <p className="ac-none">No form elements match “{q}”.</p>}
           </div>
-        </div>
+        </div>}
       </div>
     </div>
   );

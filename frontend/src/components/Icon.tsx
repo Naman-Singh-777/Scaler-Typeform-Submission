@@ -12,6 +12,8 @@ const P: Record<string, React.ReactNode> = {
   upload: <path d="M12 16V4m0 0-4 4m4-4 4 4M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3" />,
   card: <><rect x="3" y="5" width="18" height="14" rx="2" /><path d="M3 10h18" /></>,
   plus: <path d="M12 5v14M5 12h14" />,
+  access: <><circle cx="12" cy="12" r="9" /><circle cx="12" cy="7.8" r="1.1" /><path d="M7.5 10.2c3 .9 6 .9 9 0M12 11v3m0 0-2 3.2M12 14l2 3.2" /></>,
+  translate: <path d="M4 6h9M8.5 4v2M6 6c.4 3 2.4 5.6 5.5 7M12 6c-.4 3-2.6 5.8-6.4 7.4M13 20l3.5-9 3.5 9m-5.800-2.500h4.600" />,
   trash: <path d="M5 7h14M10 7V4h4v3m-8 0 1 13h10l1-13M10 11v6m4-6v6" />,
   copy: <><rect x="8" y="8" width="12" height="12" rx="2" /><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3" /></>,
   drag: <><circle cx="9" cy="6" r="1.2" /><circle cx="15" cy="6" r="1.2" /><circle cx="9" cy="12" r="1.2" /><circle cx="15" cy="12" r="1.2" /><circle cx="9" cy="18" r="1.2" /><circle cx="15" cy="18" r="1.2" /></>,

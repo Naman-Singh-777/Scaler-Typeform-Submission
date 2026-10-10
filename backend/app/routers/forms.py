@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from ..database import get_db
 from ..deps import current_user, get_owned_form, get_owned_question, new_slug
 from ..logic import CHOICE_TYPES, clean_settings
-from ..models import Choice, Form, LogicRule, Question, Response as FormResponse, User, utcnow
+from ..models import Choice, Form, FormVersion, LogicRule, Question, Response as FormResponse, User, utcnow
 from ..schemas import (
     FormCreate, FormListItem, FormOut, FormPatch, QuestionCreate, QuestionOut, QuestionPatch, ReorderIn,
 )
@@ -106,6 +106,19 @@ def duplicate_form(form: Form = Depends(get_owned_form), db: Session = Depends(g
     return copy
 
 
+def _snapshot(form: Form) -> dict:
+    return {
+        "title": form.title, "theme": form.theme, "welcome_enabled": form.welcome_enabled,
+        "welcome_title": form.welcome_title, "welcome_description": form.welcome_description, "welcome_button": form.welcome_button,
+        "thankyou_title": form.thankyou_title, "thankyou_description": form.thankyou_description,
+        "questions": [{
+            "id": q.id, "type": q.type, "title": q.title, "description": q.description, "required": q.required,
+            "settings": dict(q.settings or {}), "choices": [c.label for c in q.choices],
+            "rules": [{"op": r.op, "value": r.value, "action": r.action, "target": r.target_question_id} for r in q.rules],
+        } for q in form.questions],
+    }
+
+
 @router.post("/forms/{form_id}/publish", response_model=FormOut)
 def publish_form(form: Form = Depends(get_owned_form), db: Session = Depends(get_db)):
     if not form.questions:
@@ -117,7 +130,59 @@ def publish_form(form: Form = Depends(get_owned_form), db: Session = Depends(get
             raise HTTPException(422, f"Question {i} needs at least one choice")
     form.status = "published"
     form.published_at = form.published_at or utcnow()
+    snap = _snapshot(form)
+    last = db.scalars(select(FormVersion).where(FormVersion.form_id == form.id).order_by(FormVersion.id.desc())).first()
+    if not last or last.snapshot != snap:
+        db.add(FormVersion(form_id=form.id, snapshot=snap))
+        db.flush()
+        for old in db.scalars(select(FormVersion).where(FormVersion.form_id == form.id).order_by(FormVersion.id.desc()).offset(20)).all():
+            db.delete(old)
     db.commit()
+    return form
+
+
+@router.get("/forms/{form_id}/versions")
+def list_versions(form: Form = Depends(get_owned_form), db: Session = Depends(get_db)):
+    rows = db.scalars(select(FormVersion).where(FormVersion.form_id == form.id).order_by(FormVersion.id.desc())).all()
+    return [{"id": v.id, "created_at": v.created_at.isoformat() + "Z", "title": v.snapshot.get("title", ""),
+             "question_count": len(v.snapshot.get("questions", []))} for v in rows]
+
+
+@router.post("/forms/{form_id}/versions/{version_id}/restore", response_model=FormOut)
+def restore_version(version_id: int, form: Form = Depends(get_owned_form), db: Session = Depends(get_db)):
+    v = db.get(FormVersion, version_id)
+    if not v or v.form_id != form.id:
+        raise HTTPException(404, "Version not found")
+    snap = v.snapshot
+    for k in ("title", "welcome_enabled", "welcome_title", "welcome_description", "welcome_button", "thankyou_title", "thankyou_description"):
+        if k in snap:
+            setattr(form, k, snap[k])
+    form.theme = snap.get("theme") or form.theme
+    existing = {q.id: q for q in form.questions}
+    keep = {s["id"] for s in snap["questions"]}
+    for q in list(form.questions):  # questions that did not exist in that version go away
+        if q.id not in keep:
+            db.delete(q)
+    db.flush()
+    id_map: dict[int, Question] = {}
+    for pos, s in enumerate(snap["questions"]):
+        q = existing.get(s["id"])
+        if q is None:
+            q = Question(form=form, position=pos, type=s["type"])
+            db.add(q)
+        q.position, q.type, q.title, q.description = pos, s["type"], s["title"], s["description"]
+        q.required, q.settings = s["required"], dict(s["settings"])
+        q.choices = [Choice(position=i, label=l) for i, l in enumerate(s["choices"])]
+        id_map[s["id"]] = q
+    db.flush()
+    for s in snap["questions"]:
+        q = id_map[s["id"]]
+        q.rules = [LogicRule(position=i, op=r["op"], value=r["value"], action=r["action"],
+                             target_question_id=id_map[r["target"]].id if r["action"] == "jump" and r["target"] in id_map else None)
+                   for i, r in enumerate(s["rules"]) if r["action"] == "end" or r["target"] in id_map]
+    form.updated_at = utcnow()
+    db.commit()
+    db.refresh(form)
     return form
 
 

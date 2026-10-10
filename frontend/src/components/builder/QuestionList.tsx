@@ -47,9 +47,21 @@ function Row({ q, n, selected, onSelect, onDuplicate, onDelete }: {
   );
 }
 
-export default function QuestionList({ form, sel, onSelect, onReorder, onDuplicate, onDelete, onToggleWelcome }: {
+function BranchCard({ href }: { href: string }) {
+  const [gone, setGone] = useState(false);
+  useEffect(() => { try { setGone(localStorage.getItem('tf_branch_card') === '1'); } catch {} }, []);
+  if (gone) return null;
+  const hide = (e: React.MouseEvent) => { e.preventDefault(); e.stopPropagation(); setGone(true); try { localStorage.setItem('tf_branch_card', '1'); } catch {} };
+  return (
+    <Link href={href} className="bd-branch"><Icon name="bulb" size={20} stroke={1.5} /><span>Personalize with branching<small>Customize how your form behaves based on answers.</small></span>
+      <button className="bd-branch-x" aria-label="Dismiss" onClick={hide}><Icon name="x" size={16} stroke={1.6} /></button>
+      <i><Icon name="right" size={18} stroke={1.6} /></i></Link>
+  );
+}
+
+export default function QuestionList({ form, sel, onSelect, onReorder, onDuplicate, onDelete, onToggleWelcome, onAdd }: {
   form: Form; sel: Sel | null; onSelect: (s: Sel) => void; onReorder: (ids: number[]) => void;
-  onDuplicate: (id: number) => void; onDelete: (id: number) => void; onToggleWelcome?: () => void;
+  onDuplicate: (id: number) => void; onDelete: (id: number) => void; onToggleWelcome?: () => void; onAdd?: () => void;
 }) {
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }));
@@ -76,9 +88,10 @@ export default function QuestionList({ form, sel, onSelect, onReorder, onDuplica
               ))}
             </SortableContext>
           </DndContext>
+          {onAdd && <button className="bd-addrow" onClick={onAdd}><Icon name="plus" size={16} stroke={1.8} />Add content</button>}
           {form.questions.length === 0 && <p className="bd-empty">No questions yet. Click “Add content” to create one.</p>}
         </div>
-        <Link href={`/forms/${form.id}/workflow`} className="bd-branch"><Icon name="bulb" size={20} stroke={1.5} /><span>Personalize with branching</span><i><Icon name="right" size={18} stroke={1.6} /></i></Link>
+        <BranchCard href={`/forms/${form.id}/workflow`} />
       </section>
       <div className="bd-handle" aria-hidden />
       <section className="bd-pane bd-endings">
