@@ -15,7 +15,7 @@ const AUTO_ADVANCE_MS = 380;
 interface Props { form: Form; mode: 'live' | 'preview'; onClose?: () => void }
 
 export default function FormRunner({ form, mode, onClose }: Props) {
-  const fs = useMemo(() => ({ s: resolveSettings(form), t: makeT(form.settings?.messages) }), [form.settings]);
+  const fs = useMemo(() => ({ s: resolveSettings(form), t: makeT(form.settings?.messages, form.settings?.language) }), [form.settings]);
   const { s: S0, t } = fs;
   const bold = (txt: string) => txt.split(/\*([^*]+)\*/).map((p, i) => (i % 2 ? <b key={i}>{p}</b> : p));
   const [cookie, setCookie] = useState<string | null>('yes');

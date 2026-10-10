@@ -4,7 +4,7 @@
 >
 > The hosted demo runs on Neon Postgres instead. Render's free plan shuts the server down after 15 minutes without traffic, and every start-up after that (a wake-up, a restart or a new deploy) begins with a fresh, empty disk. A SQLite file lives on that disk, so every account, form and response would disappear each time the server restarted. Postgres is hosted separately from the server, so the data stays.
 
-A working clone of [Typeform](https://www.typeform.com/). Typeform is the product I chose to recreate for this assignment, and everything here is built from scratch to match how it looks and behaves. You build a form in a drag-and-drop builder, publish it, send people the link, and they answer one question at a time in a full-screen, animated flow. Their answers show up in a results view with stats and a CSV export.
+A working clone of [Typeform](https://www.typeform.com/), built for the Scaler AI Labs take-home assignment "Typeform Builder Clone". The assignment named Typeform as the product to recreate, so the builder, the respondent flow and the results view follow the original as closely as I could get them. You build a form in a drag-and-drop builder, publish it, send people the link, and they answer one question at a time in a full-screen, animated flow. Their answers show up in a results view with stats and a CSV export.
 
 - Original website this is a clone of: https://www.typeform.com/
 - Live app: https://scaler-typeform-submission.vercel.app

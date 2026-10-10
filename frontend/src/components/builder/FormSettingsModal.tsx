@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import Icon from '../Icon';
 import { useToast } from '../Toast';
 import { api } from '@/lib/api';
-import { FS_DEFAULTS, MESSAGES, resolveSettings, type FormSettings } from '@/lib/formSettings';
+import { FS_DEFAULTS, LANGUAGES, MESSAGES, defaultMsg, hasTranslation, resolveSettings, type FormSettings } from '@/lib/formSettings';
 import type { Builder } from '@/hooks/useBuilder';
 
 type Tab = 'general' | 'access' | 'language';
@@ -27,6 +27,29 @@ const MODES: [string, string, string][] = [
   ['checkbox', 'Knowledge quiz', 'Provide scores and real-time feedback based on respondent answers.'],
   ['scale', 'Match quiz', 'Show respondents different endings based on how they answer.'],
 ];
+
+function LangSelect({ value, onChange }: { value: string; onChange: (c: string) => void }) {
+  const [open, setOpen] = useState(false);
+  const [q, setQ] = useState('');
+  const list = LANGUAGES.filter(([, n]) => n.toLowerCase().includes(q.trim().toLowerCase()));
+  const name = LANGUAGES.find(([c]) => c === value)?.[1] || 'English';
+  return (
+    <div className="fs-lang" onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) { setOpen(false); setQ(''); } }}>
+      <button className="fs-fake" aria-haspopup="listbox" aria-expanded={open} onClick={() => setOpen(!open)}><span>{name}</span><Icon name="chevdown" size={18} stroke={1.6} /></button>
+      {open && (
+        <div className="fs-langpop">
+          <label><Icon name="search" size={18} stroke={1.6} /><input autoFocus value={q} onChange={(e) => setQ(e.target.value)} aria-label="Search languages" /></label>
+          <div role="listbox" aria-label="Languages">
+            {list.map(([c, n]) => (
+              <button key={c} role="option" aria-selected={c === value} className={c === value ? 'on' : ''} onClick={() => { onChange(c); setOpen(false); setQ(''); }}>{n}{c === value && <Icon name="check" size={18} stroke={1.6} />}</button>
+            ))}
+            {!list.length && <p>No languages match.</p>}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function FormSettingsModal({ b, email, onClose, onTranslations }: { b: Builder; email: string; onClose: () => void; onTranslations: () => void }) {
   const toast = useToast();
@@ -133,7 +156,8 @@ export default function FormSettingsModal({ b, email, onClose, onTranslations }:
               <>
                 <section>
                   <h3>Form Languages</h3>
-                  <div className="fs-two"><span>Main language</span><div className="fs-fake"><span>English</span><Icon name="chevdown" size={18} stroke={1.6} /></div></div>
+                  <div className="fs-two"><span>Main language</span><LangSelect value={s.language} onChange={(c) => save({ language: c })} /></div>
+                  {!hasTranslation(s.language) && <p className="fs-note">Built-in system messages for this language are not available yet, so respondents see them in English. You can still write your own below.</p>}
                 </section>
                 <section>
                   <h3>Translations</h3>
@@ -146,7 +170,7 @@ export default function FormSettingsModal({ b, email, onClose, onTranslations }:
                     <div key={g} className="fs-grp">
                       <div className="fs-gh"><b>{g}</b><button onClick={() => reset(g)}>Reset all</button></div>
                       {MESSAGES.filter((m) => m.group === g).map((m) => {
-                        const v = s.messages[m.key] ?? m.def;
+                        const v = s.messages[m.key] ?? defaultMsg(m.key, s.language);
                         return (
                           <label key={m.key} className="fs-msg">
                             <span>{m.label}</span>
