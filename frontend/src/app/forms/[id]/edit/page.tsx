@@ -8,6 +8,7 @@ import AiChat from '@/components/AiChat';
 import AiStudio from '@/components/AiStudio';
 import { api } from '@/lib/api';
 import { guessQuestions } from '@/lib/importQuestions';
+import FormSettingsModal from '@/components/builder/FormSettingsModal';
 import { AccessibilityPanel, TranslationsDialog, VersionHistory } from '@/components/builder/ToolbarDialogs';
 import FormHeader from '@/components/FormHeader';
 import Icon from '@/components/Icon';
@@ -25,7 +26,9 @@ export default function BuilderPage({ params }: { params: { id: string } }) {
   const [mobile, setMobile] = useState(false);
   const [rightOpen, setRightOpen] = useState(true);
   const [tab, setTab] = useState<PanelTab>('settings');
-  const [dlg, setDlg] = useState<null | 'a11y' | 'history' | 'translate'>(null);
+  const [dlg, setDlg] = useState<null | 'a11y' | 'history' | 'translate' | 'settings'>(null);
+  const [email, setEmail] = useState('');
+  useEffect(() => { api.me().then((u) => setEmail(u?.email || '')).catch(() => {}); }, []);
   const [modes, setModes] = useState(false);
   const [studio, setStudio] = useState<string | null>(null);
 
@@ -89,7 +92,7 @@ export default function BuilderPage({ params }: { params: { id: string } }) {
             <button className={`tb-ico ${dlg === 'a11y' ? 'on' : ''}`} aria-label="Check accessibility" title="Check accessibility" onClick={() => setDlg(dlg === 'a11y' ? null : 'a11y')}><Icon name="access" size={18} stroke={1.6} /></button>
             <button className="tb-ico" aria-label="Version History" title="Version History" onClick={() => setDlg('history')}><Icon name="cycle" size={18} stroke={1.6} /></button>
             <button className="tb-ico" aria-label="Translations" title="Translations" onClick={() => setDlg('translate')}><Icon name="translate" size={18} stroke={1.6} /></button>
-            <button className="tb-ico" aria-label="Form settings" title="Settings" onClick={() => openPanel('settings')}><Icon name="settings" size={18} stroke={1.6} /></button>
+            <button className={`tb-ico ${dlg === 'settings' ? 'on' : ''}`} aria-label="Form settings" title="Form settings" onClick={() => setDlg('settings')}><Icon name="settings" size={18} stroke={1.6} /></button>
             <span className="spacer" />
             <button className="tb-ico" aria-label="Hide question panel" title="Hide question panel" onClick={() => setRightOpen(!rightOpen)}><Icon name="panel" size={18} stroke={1.6} /></button>
           </div>
@@ -102,6 +105,7 @@ export default function BuilderPage({ params }: { params: { id: string } }) {
         onPick={async (t) => { setAdding(false); const q = await b.addQuestion(t, insertAt); if (q) setSel(q.id); }} />}
       {studio && <AiStudio b={b} initial={studio} onClose={() => setStudio(null)} onAdded={(id) => setSel(id)} />}
       {dlg === 'a11y' && <AccessibilityPanel form={form} onClose={() => setDlg(null)} onSelect={(id) => setSel(id)} />}
+      {dlg === 'settings' && <FormSettingsModal b={b} email={email} onClose={() => setDlg(null)} onTranslations={() => setDlg('translate')} />}
       {dlg === 'history' && <VersionHistory b={b} onClose={() => setDlg(null)} />}
       {dlg === 'translate' && <TranslationsDialog onClose={() => setDlg(null)} />}
       {preview && <div className="tf-fullscreen"><FormRunner key={Date.now()} form={form} mode="preview" onClose={() => setPreview(false)} /></div>}

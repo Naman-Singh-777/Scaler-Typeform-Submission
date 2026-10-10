@@ -1,6 +1,9 @@
 """Connect: webhooks (generic, Slack incoming-webhook and Zapier catch-hook). New completed responses are POSTed as JSON."""
 import ipaddress
+import os
+import smtplib
 import socket
+from email.message import EmailMessage
 from urllib.parse import urlparse
 
 import httpx
@@ -73,6 +76,32 @@ def _rows(form: Form, resp: Response) -> list[dict]:
     return out
 
 
+def mail_configured() -> bool:
+    return bool(os.getenv("SMTP_HOST") and os.getenv("SMTP_FROM"))
+
+
+def _email_owner(form: Form, rows: list[dict]) -> None:
+    """'Send email for new responses' (Form settings > General > Notifications). Needs SMTP_* env vars."""
+    if not mail_configured() or not (form.settings or {}).get("notify"):
+        return
+    msg = EmailMessage()
+    msg["Subject"], msg["From"], msg["To"] = f"New response: {form.title}", os.environ["SMTP_FROM"], form.owner.email
+    msg.set_content(f"Someone just completed “{form.title}”.\n\n" + "\n".join(f"{r.get('question', '')}: {r.get('answer', '')}" for r in rows))
+    try:
+        with smtplib.SMTP(os.environ["SMTP_HOST"], int(os.getenv("SMTP_PORT", "587")), timeout=10) as s:
+            s.starttls()
+            if os.getenv("SMTP_USER"):
+                s.login(os.environ["SMTP_USER"], os.getenv("SMTP_PASSWORD", ""))
+            s.send_message(msg)
+    except Exception as e:  # never break the response because mail failed
+        print("notification email failed:", type(e).__name__)
+
+
+@router.get("/mail/status")
+def mail_status():
+    return {"configured": mail_configured()}
+
+
 def deliver_response(form_id: int, response_id: int) -> None:
     """Background task run after a respondent submits."""
     with SessionLocal() as db:
@@ -80,6 +109,7 @@ def deliver_response(form_id: int, response_id: int) -> None:
         if not form or not resp:
             return
         rows = _rows(form, resp)
+        _email_owner(form, rows)
         for w in db.scalars(select(Webhook).where(Webhook.form_id == form_id)).all():
             w.last_status, w.last_at = _post(w, _payload(w.kind, form.title, form.id, resp.id, rows, resp.submitted_at)), utcnow()
         db.commit()

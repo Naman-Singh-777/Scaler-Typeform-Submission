@@ -9,6 +9,7 @@ export interface Question {
 }
 export interface Theme { preset: string; background: string; text: string; answer: string; button: string; buttonText: string; font: string }
 export interface Form {
+  settings?: import('./formSettings').FormSettings;
   id: number; title: string; slug: string; status: 'draft' | 'published'; theme: Theme;
   welcome_enabled: boolean; welcome_title: string; welcome_description: string; welcome_button: string;
   thankyou_title: string; thankyou_description: string;

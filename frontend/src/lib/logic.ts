@@ -1,21 +1,22 @@
 // Client-side validation + branching. Mirrors backend/app/logic.py.
 import type { Question, Rule } from './types';
+import { makeT } from './formSettings';
 
 export const END = -2;
 export const MAX_UPLOAD = 5 * 1024 * 1024; // keep in sync with backend MAX_UPLOAD_BYTES
 export const isEmpty = (v: any) => v === undefined || v === null || v === '' || (Array.isArray(v) && v.length === 0);
 const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]{2,}$/;
 
-export function validateAnswer(q: Question, v: any): string | null {
-  if (isEmpty(v)) return q.required ? 'Please fill this in' : null;
+export function validateAnswer(q: Question, v: any, t: ReturnType<typeof makeT> = makeT()): string | null {
+  if (isEmpty(v)) return q.required ? t(['multiple_choice', 'dropdown', 'yes_no', 'rating'].includes(q.type) ? 'err_selection' : 'err_required') : null;
   switch (q.type) {
-    case 'email': return EMAIL_RE.test(String(v).trim()) ? null : 'Hmm... that email address looks invalid';
+    case 'email': return EMAIL_RE.test(String(v).trim()) ? null : t('err_email');
     case 'number': {
       const n = Number(v);
-      if (String(v).trim() === '' || !Number.isFinite(n)) return 'Numbers only please!';
+      if (String(v).trim() === '' || !Number.isFinite(n)) return t('err_number');
       const { min, max } = q.settings;
-      if (typeof min === 'number' && n < min) return `Must be ${min} or greater`;
-      if (typeof max === 'number' && n > max) return `Must be ${max} or less`;
+      const lo = typeof min === 'number' && n < min, hi = typeof max === 'number' && n > max;
+      if (lo || hi) return typeof min === 'number' && typeof max === 'number' ? t('err_number_range', { min_value: min, max_value: max }) : lo ? t('err_number_low', { min_value: min }) : t('err_number_high', { max_value: max });
       return null;
     }
     case 'short_text': return String(v).length > 2000 ? 'That answer is too long' : null;

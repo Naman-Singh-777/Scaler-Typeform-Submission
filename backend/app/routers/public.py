@@ -19,6 +19,11 @@ def _published(slug: str, db: Session) -> Form:
     return form
 
 
+def _open(form: Form) -> None:
+    if (form.settings or {}).get("accepting") is False:
+        raise HTTPException(403, "This form is no longer accepting responses")
+
+
 @router.get("/forms/{slug}", response_model=FormOut)
 def get_public_form(slug: str, db: Session = Depends(get_db)):
     form = _published(slug, db)
@@ -31,6 +36,7 @@ def get_public_form(slug: str, db: Session = Depends(get_db)):
 def start_response(slug: str, db: Session = Depends(get_db)):
     """Called when the respondent starts — lets the creator track partial responses."""
     form = _published(slug, db)
+    _open(form)
     r = Response(form_id=form.id)
     db.add(r)
     db.commit()
@@ -40,6 +46,7 @@ def start_response(slug: str, db: Session = Depends(get_db)):
 @router.post("/forms/{slug}/responses/{response_id}/submit", status_code=201)
 def submit_response(slug: str, response_id: int, body: AnswersIn, bg: BackgroundTasks, db: Session = Depends(get_db)):
     form = _published(slug, db)
+    _open(form)
     resp = db.scalar(select(Response).where(Response.id == response_id, Response.form_id == form.id))
     if not resp:
         raise HTTPException(404, "Response not found")

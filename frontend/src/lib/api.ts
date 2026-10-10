@@ -66,6 +66,7 @@ export const api = {
   deleteForm: (id: number) => req<void>(`/forms/${id}`, json('DELETE')),
   duplicateForm: (id: number) => req<Form>(`/forms/${id}/duplicate`, json('POST')),
   publish: (id: number) => req<Form>(`/forms/${id}/publish`, json('POST')),
+  mailStatus: () => req<{ configured: boolean }>('/mail/status'),
   versions: (id: number) => req<{ id: number; created_at: string; title: string; question_count: number }[]>(`/forms/${id}/versions`),
   restoreVersion: (id: number, vid: number) => req<Form>(`/forms/${id}/versions/${vid}/restore`, json('POST')),
   unpublish: (id: number) => req<Form>(`/forms/${id}/unpublish`, json('POST')),

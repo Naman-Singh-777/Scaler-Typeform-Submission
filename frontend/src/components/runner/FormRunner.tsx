@@ -5,6 +5,7 @@ import Icon from '../Icon';
 import QuestionInput, { letter } from './QuestionInput';
 import { api, ApiError } from '@/lib/api';
 import { END, isEmpty, nextIndex, validateAnswer } from '@/lib/logic';
+import { RunnerCtx, makeT, resolveSettings } from '@/lib/formSettings';
 import { themeVars } from '@/lib/themes';
 import type { Form, Question } from '@/lib/types';
 
@@ -14,6 +15,11 @@ const AUTO_ADVANCE_MS = 380;
 interface Props { form: Form; mode: 'live' | 'preview'; onClose?: () => void }
 
 export default function FormRunner({ form, mode, onClose }: Props) {
+  const fs = useMemo(() => ({ s: resolveSettings(form), t: makeT(form.settings?.messages) }), [form.settings]);
+  const { s: S0, t } = fs;
+  const bold = (txt: string) => txt.split(/\*([^*]+)\*/).map((p, i) => (i % 2 ? <b key={i}>{p}</b> : p));
+  const [cookie, setCookie] = useState<string | null>('yes');
+  const saveKey = `tf_save_${form.slug}`;
   const qs = useMemo(() => form.questions.map((q) => ({ ...q, choices: q.choices.filter((c) => c.label.trim()) })), [form.questions]);
   const firstScreen = form.welcome_enabled ? WELCOME : qs.length ? 0 : END;
   const [cur, setCur] = useState(firstScreen);
@@ -62,22 +68,22 @@ export default function FormRunner({ form, mode, onClose }: Props) {
       const err = e as ApiError;
       const idx = err.errors ? qs.findIndex((q) => err.errors![String(q.id)]) : -1;
       if (idx >= 0) { go(idx, 'back'); setError(err.errors![String(qs[idx].id)]); }
-      else setError(err.message || 'Something went wrong. Please try again.');
+      else setError(err.message || t('err_server'));
     } finally { setSubmitting(false); }
-  }, [mode, qs, form.slug, go]);
+  }, [mode, qs, form.slug, go, t]);
 
-  const advance = useCallback((ans: Record<number, any> = S.current.answers) => {
+  const advance = useCallback((ans: Record<number, any> = S.current.answers, free = false) => {
     const i = S.current.cur;
     if (i === WELCOME) { ensureStarted(); go(qs.length ? 0 : END, 'next'); return; }
     if (i < 0) return;
     const q = qs[i];
-    const err = validateAnswer(q, ans[q.id]);
+    const err = free ? null : validateAnswer(q, ans[q.id], t);
     if (err) { setError(err); return; }
     const nxt = nextIndex(qs, i, ans);
-    if (nxt === END) { submit(ans); return; }
+    if (nxt === END) { if (!free) submit(ans); return; }
     setHistory((h) => [...h, i]);
     go(nxt, 'next');
-  }, [qs, go, submit, ensureStarted]);
+  }, [qs, go, submit, ensureStarted, t]);
 
   const back = useCallback(() => {
     const { cur: i, history: h } = S.current;
@@ -129,6 +135,32 @@ export default function FormRunner({ form, mode, onClose }: Props) {
     return () => window.removeEventListener('keydown', onKey);
   }, [qs, advance, back, setAnswer]);
 
+  const live = mode === 'live';
+  useEffect(() => { // cookie choice + resume saved progress
+    if (!live) return;
+    let c: string | null = null;
+    try { c = localStorage.getItem('tf_cookie'); } catch {}
+    setCookie(S0.cookie_consent ? c : 'yes');
+    if (!S0.autosave || (S0.cookie_consent && c !== 'yes')) return;
+    try {
+      const d = JSON.parse(localStorage.getItem(saveKey) || 'null');
+      if (d && d.cur >= 0 && d.cur < qs.length) {
+        S.current = { cur: d.cur, answers: d.answers || {}, history: d.history || [] };
+        setAnswers(S.current.answers); setHistory(S.current.history); setCur(d.cur); ensureStarted();
+      }
+    } catch {}
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (!live || !S0.autosave || (S0.cookie_consent && cookie !== 'yes')) return;
+    try {
+      if (cur === END) { localStorage.removeItem(saveKey); return; }
+      if (cur < 0 && !Object.keys(answers).length) return;
+      const plain = Object.fromEntries(Object.entries(answers).filter(([, v]) => !(typeof File !== 'undefined' && v instanceof File)));
+      localStorage.setItem(saveKey, JSON.stringify({ cur, answers: plain, history }));
+    } catch {}
+  }, [cur, answers, history, cookie]); // eslint-disable-line react-hooks/exhaustive-deps
+  const choose = (v: 'yes' | 'no') => { setCookie(v); try { localStorage.setItem('tf_cookie', v); if (v === 'no') localStorage.removeItem(saveKey); } catch {} };
+
   const total = qs.length;
   const pct = cur === END ? 100 : cur === WELCOME ? 0 : Math.round((history.length / Math.max(total, 1)) * 100);
   const restart = () => {
@@ -144,7 +176,7 @@ export default function FormRunner({ form, mode, onClose }: Props) {
           {form.welcome_description && <p className="tf-desc">{form.welcome_description}</p>}
           <div className="tf-actions">
             <button className="tf-ok" onClick={() => advance()} disabled={!live}>{form.welcome_button || 'Start'}</button>
-            <span className="tf-hint">press <b>Enter</b> ↵</span>
+            <span className="tf-hint">{bold(t('enter_hint'))}</span>
           </div>
           <p className="tf-hint" style={{ marginTop: 22 }}>⏱ Takes {Math.max(1, Math.ceil(total / 4))} minute{total > 4 ? 's' : ''}</p>
         </div>
@@ -167,8 +199,8 @@ export default function FormRunner({ form, mode, onClose }: Props) {
     return (
       <div className="tf-content">
         <div className="tf-qhead">
-          <span className="tf-num">{idx + 1}<Icon name="right" size={16} stroke={2.4} /></span>
-          <h1 className="tf-title">{q.title || 'Your question here'}{q.required && <span className="tf-req"> *</span>}</h1>
+          {S0.question_number && <span className="tf-num">{idx + 1}<Icon name="right" size={16} stroke={2.4} /></span>}
+          <h1 className="tf-title">{q.title || 'Your question here'}{q.required && S0.asterisks && <span className="tf-req"> *</span>}</h1>
         </div>
         {q.description && <p className="tf-desc">{q.description}</p>}
         <div className="tf-answer">
@@ -178,19 +210,31 @@ export default function FormRunner({ form, mode, onClose }: Props) {
         {(!autoSingle || isLast) && (
           <div className="tf-actions">
             <button className="tf-ok" onClick={() => advance()} disabled={!live || submitting}>
-              {isLast ? (submitting ? 'Submitting…' : 'Submit') : 'OK'}{!isLast && <Icon name="check" size={20} stroke={2.4} />}
+              {isLast ? (submitting ? 'Submitting…' : t('submit_button')) : t('ok_button')}{!isLast && <Icon name="check" size={20} stroke={2.4} />}
             </button>
             <span className="tf-hint">
-              {q.type === 'long_text' ? <><b>Shift ⇧ + Enter ↵</b> to make a line break</> : <>press <b>Enter</b> ↵</>}
+              {bold(q.type === 'long_text' ? t('line_break') : t('enter_hint'))}
             </span>
           </div>
         )}
-        {q.type === 'multiple_choice' && q.settings.allow_multiple && <p className="tf-hint" style={{ marginTop: 14 }}>Choose as many as you like</p>}
+        {q.type === 'multiple_choice' && q.settings.allow_multiple && <p className="tf-hint" style={{ marginTop: 14 }}>{t('multi_hint')}</p>}
       </div>
     );
   };
 
+  if (live && S0.accepting === false) {
+    return (
+      <div className="tf-theme tf-runner" style={themeVars(form.theme)}>
+        <div className="tf-stage"><div className="tf-layer in-first"><div className="tf-content center">
+          <h1 className="tf-title big">This form is closed</h1>
+          <p className="tf-desc">It is no longer accepting new responses.</p>
+        </div></div></div>
+      </div>
+    );
+  }
+
   return (
+    <RunnerCtx.Provider value={fs}>
     <div className="tf-theme tf-runner" style={themeVars(form.theme)}>
       {mode === 'preview' && (
         <div className="tf-preview-bar">
@@ -201,23 +245,30 @@ export default function FormRunner({ form, mode, onClose }: Props) {
           </span>
         </div>
       )}
-      <div className="tf-progress"><div style={{ width: `${pct}%` }} /></div>
+      {S0.progress_bar && <div className="tf-progress"><div style={{ width: `${pct}%` }} /></div>}
       <div className="tf-stage" style={mode === 'preview' ? { top: 44 } : undefined}>
         {prev !== null && <div key={`p${prev}`} className={`tf-layer out-${dir}`} aria-hidden>{renderScreen(prev, false)}</div>}
         <div key={`c${cur}`} className={`tf-layer ${prev !== null ? `in-${dir}` : 'in-first'}`}>{renderScreen(cur, true)}</div>
       </div>
       <div className="tf-footer">
-        <span className="tf-pct">{cur >= 0 && cur !== END ? `${pct}% completed` : ''}</span>
+        <span className="tf-pct">{S0.progress_bar && cur >= 0 && cur !== END ? `${pct}% completed` : ''}</span>
         <div className="tf-nav">
           <span className="tf-brand">Made with Typeform Clone</span>
-          {cur >= 0 && cur !== END && (
+          {S0.nav_arrows && cur >= 0 && cur !== END && (
             <div className="tf-arrows">
               <button onClick={back} aria-label="Previous question" disabled={!history.length && !(form.welcome_enabled)}><Icon name="up" size={18} stroke={2.4} /></button>
-              <button onClick={() => advance()} aria-label="Next question"><Icon name="down" size={18} stroke={2.4} /></button>
+              <button onClick={() => advance(undefined, S0.free_nav)} aria-label="Next question"><Icon name="down" size={18} stroke={2.4} /></button>
             </div>
           )}
         </div>
       </div>
+      {live && S0.cookie_consent && cookie === null && (
+        <div className="tf-cookie" role="dialog" aria-label="Cookie consent">
+          <p>This form uses cookies to save your progress and let you pick up where you left off.</p>
+          <span><button onClick={() => choose('no')}>Decline</button><button className="on" onClick={() => choose('yes')}>Accept</button></span>
+        </div>
+      )}
     </div>
+    </RunnerCtx.Provider>
   );
 }

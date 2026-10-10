@@ -73,6 +73,7 @@ class Form(Base):
     slug: Mapped[str] = mapped_column(String(16), unique=True, index=True)  # public link id
     status: Mapped[str] = mapped_column(String(12), default="draft")  # draft | published
     theme: Mapped[dict] = mapped_column(JSON, default=dict)
+    settings: Mapped[dict] = mapped_column(JSON, default=dict)  # Form settings dialog: display, preferences, access, notifications, system messages
     welcome_enabled: Mapped[bool] = mapped_column(Boolean, default=False)
     welcome_title: Mapped[str] = mapped_column(String(300), default="")
     welcome_description: Mapped[str] = mapped_column(Text, default="")

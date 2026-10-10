@@ -155,3 +155,17 @@ def compute_path(questions: list[Question], answers: dict[int, Any]) -> list[Que
                 break
         i = nxt
     return path
+
+
+BOOL_SETTINGS = ("nav_arrows", "progress_bar", "question_number", "asterisks", "letters", "autosave", "free_nav",
+                 "cookie_consent", "accepting", "notify")
+
+
+def clean_form_settings(raw: dict[str, Any] | None) -> dict[str, Any]:
+    """Keep only the flags and system messages the Form settings dialog knows about."""
+    raw = raw or {}
+    out: dict[str, Any] = {k: bool(raw[k]) for k in BOOL_SETTINGS if k in raw}
+    msgs = raw.get("messages")
+    if isinstance(msgs, dict):
+        out["messages"] = {str(k)[:40]: str(v)[:300] for k, v in list(msgs.items())[:40] if re.fullmatch(r"[a-z_]+", str(k))}
+    return out

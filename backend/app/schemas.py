@@ -71,6 +71,7 @@ class FormCreate(BaseModel):
 class FormPatch(BaseModel):
     title: str | None = Field(default=None, min_length=1, max_length=200)
     theme: dict[str, Any] | None = None
+    settings: dict[str, Any] | None = None
     welcome_enabled: bool | None = None
     welcome_title: str | None = Field(default=None, max_length=300)
     welcome_description: str | None = Field(default=None, max_length=2000)
@@ -85,6 +86,7 @@ class FormOut(ORM):
     slug: str
     status: str
     theme: dict[str, Any]
+    settings: dict[str, Any] = {}
     welcome_enabled: bool
     welcome_title: str
     welcome_description: str

@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from ..database import get_db
 from ..deps import current_user, get_owned_form, get_owned_question, new_slug
-from ..logic import CHOICE_TYPES, clean_settings
+from ..logic import CHOICE_TYPES, clean_form_settings, clean_settings
 from ..models import Choice, Form, FormVersion, LogicRule, Question, Response as FormResponse, User, utcnow
 from ..schemas import (
     FormCreate, FormListItem, FormOut, FormPatch, QuestionCreate, QuestionOut, QuestionPatch, ReorderIn,
@@ -71,7 +71,7 @@ def get_form(form: Form = Depends(get_owned_form)):
 def update_form(body: FormPatch, form: Form = Depends(get_owned_form), db: Session = Depends(get_db)):
     for key, val in body.model_dump(exclude_unset=True).items():
         if val is not None:
-            setattr(form, key, val)
+            setattr(form, key, clean_form_settings(val) if key == "settings" else val)
     form.updated_at = utcnow()
     db.commit()
     return form
@@ -108,7 +108,7 @@ def duplicate_form(form: Form = Depends(get_owned_form), db: Session = Depends(g
 
 def _snapshot(form: Form) -> dict:
     return {
-        "title": form.title, "theme": form.theme, "welcome_enabled": form.welcome_enabled,
+        "title": form.title, "theme": form.theme, "settings": form.settings or {}, "welcome_enabled": form.welcome_enabled,
         "welcome_title": form.welcome_title, "welcome_description": form.welcome_description, "welcome_button": form.welcome_button,
         "thankyou_title": form.thankyou_title, "thankyou_description": form.thankyou_description,
         "questions": [{
@@ -158,6 +158,7 @@ def restore_version(version_id: int, form: Form = Depends(get_owned_form), db: S
         if k in snap:
             setattr(form, k, snap[k])
     form.theme = snap.get("theme") or form.theme
+    form.settings = snap.get("settings") or {}
     existing = {q.id: q for q in form.questions}
     keep = {s["id"] for s in snap["questions"]}
     for q in list(form.questions):  # questions that did not exist in that version go away

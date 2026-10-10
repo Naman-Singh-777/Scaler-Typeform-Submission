@@ -12,8 +12,13 @@ from .seed import ensure_demo_account, seed_if_empty, seed_site_content
 def _add_missing_columns() -> None:
     """create_all never alters existing tables, so older SQLite files get the new users.password_hash column here."""
     if not str(engine.url).startswith("sqlite"):
+        with engine.begin() as conn:  # Postgres: forms.settings arrived with the Form settings dialog
+            conn.exec_driver_sql("ALTER TABLE forms ADD COLUMN IF NOT EXISTS settings JSON DEFAULT '{}'")
         return
     with engine.begin() as conn:
+        fcols = {row[1] for row in conn.exec_driver_sql("PRAGMA table_info(forms)")}
+        if fcols and "settings" not in fcols:
+            conn.exec_driver_sql("ALTER TABLE forms ADD COLUMN settings JSON DEFAULT '{}'")
         cols = {row[1] for row in conn.exec_driver_sql("PRAGMA table_info(users)")}
         if cols and "password_hash" not in cols:
             conn.exec_driver_sql("ALTER TABLE users ADD COLUMN password_hash VARCHAR(255)")
